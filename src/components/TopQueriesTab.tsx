@@ -23,10 +23,8 @@ export function TopQueriesTab() {
   return (
     <div className="h-full overflow-y-auto">
       <header className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
-        <h1 className="text-2xl font-bold text-gray-900">Top Queries</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Popular camera comparisons and questions
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">历史</h1>
+        <p className="text-sm text-gray-600 mt-1">最近的查询</p>
       </header>
 
       <div className="p-4 space-y-3">
@@ -34,7 +32,7 @@ export function TopQueriesTab() {
           <div
             key={query.id}
             className={clsx(
-              'p-4 rounded-lg border-2 border-gray-200',
+              'p-4 rounded-2xl border border-gray-200',
               'bg-white shadow-sm',
               'transition-all duration-200',
               'min-h-[88px] flex flex-col justify-between',
@@ -61,9 +59,7 @@ export function TopQueriesTab() {
         ))}
       </div>
 
-      <div className="p-4 text-center text-sm text-gray-500">
-        <p>Tap functionality coming soon - Use Chat tab for now</p>
-      </div>
+      <div className="p-4 text-center text-sm text-gray-500">功能即将上线</div>
     </div>
   );
 }

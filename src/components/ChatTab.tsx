@@ -1,13 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, ArrowLeft } from 'lucide-react';
 import { useChatStore } from '../store/chat';
 import { openrouter, DEFAULT_MODEL } from '../lib/openrouter';
 import { streamText } from 'ai';
 import clsx from 'clsx';
 
-export function ChatTab() {
+interface ChatTabProps {
+  onBack?: () => void;
+  initialInput?: string;
+}
+
+export function ChatTab({ onBack, initialInput }: ChatTabProps) {
   const { messages, addMessage, updateMessage, isLoading, setLoading, clearMessages } = useChatStore();
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialInput ?? '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages change
@@ -71,14 +76,24 @@ export function ChatTab() {
     <div className="flex flex-col h-full bg-gray-50">
       {/* Header */}
       <header className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10 flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Chat</h1>
-          <p className="text-xs text-gray-600">Ask about cameras</p>
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="p-2 -ml-2 rounded-lg hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
+            </button>
+          )}
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">聊天</h1>
+            <p className="text-xs text-gray-600">Ask about cameras</p>
+          </div>
         </div>
         {messages.length > 0 && (
           <button
             onClick={clearMessages}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-violet-600 hover:text-violet-700 font-medium"
           >
             Clear
           </button>
@@ -89,8 +104,8 @@ export function ChatTab() {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-              <Send className="w-8 h-8 text-blue-600" />
+            <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center mb-4">
+              <Send className="w-8 h-8 text-violet-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-700 mb-2">
               Start a conversation
@@ -113,7 +128,7 @@ export function ChatTab() {
                   className={clsx(
                     'max-w-[85%] px-4 py-3 rounded-lg',
                     message.role === 'user'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-violet-600 text-white'
                       : 'bg-white border border-gray-200 text-gray-900'
                   )}
                 >
@@ -150,7 +165,7 @@ export function ChatTab() {
               'flex-1 resize-none',
               'px-4 py-3 rounded-lg',
               'border-2 border-gray-200',
-              'focus:outline-none focus:border-blue-500',
+              'focus:outline-none focus:border-violet-500',
               'text-base',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
@@ -161,11 +176,11 @@ export function ChatTab() {
             disabled={!input.trim() || isLoading}
             className={clsx(
               'w-11 h-11 rounded-lg flex items-center justify-center',
-              'bg-blue-600 text-white',
-              'hover:bg-blue-700 active:scale-95',
+              'bg-violet-600 text-white',
+              'hover:bg-violet-700 active:scale-95',
               'transition-all duration-200',
               'disabled:opacity-50 disabled:cursor-not-allowed',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500'
             )}
           >
             {isLoading ? (
