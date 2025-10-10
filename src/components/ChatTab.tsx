@@ -35,7 +35,7 @@ export function ChatTab({ onBack, initialInput }: ChatTabProps) {
 
     try {
       const { textStream } = await streamText({
-        model: openrouter(DEFAULT_MODEL),
+        model: openrouter.chat(DEFAULT_MODEL),
         messages: [
           {
             role: 'system',

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Send, ChevronDown, Sparkles, Loader2, Code2, Eye } from 'lucide-react';
-import { generateText, tool, stepCountIs } from 'ai';
+import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { openrouter, DEFAULT_MODEL } from '../lib/openrouter';
 import { useArtifactStore } from '../store/artifact';
@@ -62,6 +62,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isSending = useRef(false); // Synchronous guard
+  const [showCreatedBadge, setShowCreatedBadge] = useState(false);
   const { createArtifact, updateArtifact, currentArtifact } = useArtifactStore();
 
   // Auto-scroll to bottom
@@ -84,18 +85,42 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
     setIsLoading(true);
     setInput('');
 
-    const newMessages: Message[] = [
-      ...messages,
-      { id: `msg-${Date.now()}`, role: 'user', content: userInput },
-    ];
-    setMessages(newMessages);
+    // 1) add user message
+    const userMsg = { id: `msg-${Date.now()}`, role: 'user' as const, content: userInput };
+    const baseMessages: Message[] = [...messages, userMsg];
+    setMessages(baseMessages);
+
+    // 2) add assistant placeholder with "Thinking"
+    const assistantId = `msg-${Date.now()}-assistant`;
+    setMessages(prev => [
+      ...prev,
+      { id: assistantId, role: 'assistant', content: 'Thinking', toolInvocations: [] }
+    ]);
+
+    // Helpers to manage tool step badges
+    const addToolStep = (toolName: string, args?: any) => {
+      const callId = `tool-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setMessages(prev => prev.map(m => m.id === assistantId
+        ? { ...m, toolInvocations: [ ...(m.toolInvocations || []), { id: callId, toolName, status: 'pending', args } ] }
+        : m
+      ));
+      return callId;
+    };
+    const finishToolStep = (callId: string) => {
+      setMessages(prev => prev.map(m => m.id === assistantId
+        ? { ...m, toolInvocations: (m.toolInvocations || []).map((t: any) => t.id === callId ? { ...t, status: 'done' } : t) }
+        : m
+      ));
+    };
 
     try {
-      const { text: finalText, steps } = await generateText({
+      const { textStream } = await streamText({
         model: openrouter.chat(DEFAULT_MODEL),
-        system: SYSTEM_PROMPT,
-        messages: newMessages,
-        stopWhen: stepCountIs(20), // Enable agent loop
+        stopWhen: stepCountIs(5),
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...baseMessages.map(m => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content }))
+        ],
         tools: {
           EditReactComponent: tool({
             description: 'Create or update a React component with the given code',
@@ -106,12 +131,15 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
               imports: z.string().describe('Any additional import statements needed').optional(),
             }),
             execute: async ({ code, title, description, imports }: any) => {
+              const callId = addToolStep('EditReactComponent', { title });
               const fullCode = COMPONENT_TEMPLATE(code, imports || '');
               if (currentArtifact) {
                 updateArtifact(currentArtifact.id, fullCode, { title, description });
               } else {
                 createArtifact(fullCode, { title, description });
+                setShowCreatedBadge(true);
               }
+              finishToolStep(callId);
               return { success: true, message: `Component ${title || 'created'} successfully` };
             }
           }),
@@ -119,35 +147,26 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
             description: 'Trigger a preview update to show the latest component changes',
             inputSchema: z.object({}),
             execute: async () => {
+              const callId = addToolStep('Preview');
               onPreviewUpdate?.();
               window.dispatchEvent(new CustomEvent('artifact-preview-update', { detail: { artifactId: currentArtifact?.id } }));
+              finishToolStep(callId);
               return { success: true, message: 'Preview updated' };
             }
           })
         }
       });
 
-      // Construct the final assistant message with tool invocations from the steps
-      const assistantMessage: Message = {
-        id: `msg-${Date.now()}-assistant`,
-        role: 'assistant',
-        content: finalText,
-        toolInvocations: steps.flatMap(step => step.toolCalls.map(toolCall => ({
-          toolName: toolCall.toolName,
-          args: toolCall.args,
-        }))),
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-
+      // 3) stream tokens into the same assistant message
+      let full = '';
+      for await (const chunk of textStream) {
+        full += chunk;
+        const content = full.length > 0 ? full : 'Thinking';
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content } : m));
+      }
     } catch (error) {
       console.error('Chat error:', error);
-      const errorResponseMessage: Message = {
-        id: `msg-${Date.now()}-error`,
-        role: 'assistant',
-        content: '抱歉，处理您的请求时出现错误。请检查网络连接或 API 密钥配置。'
-      };
-      setMessages(prev => [...prev, errorResponseMessage]);
+      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '抱歉，处理您的请求时出现错误。请检查网络连接或 API 密钥配置。' } : m));
     } finally {
       setIsLoading(false);
       isSending.current = false;
@@ -185,7 +204,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
           <h3 className="font-semibold text-gray-900">AI 组件创建助手</h3>
         </div>
         <div className="flex items-center gap-2">
-          {currentArtifact && (
+          {showCreatedBadge && (
             <div className="flex items-center gap-1 px-2 py-1 bg-green-50 rounded-lg">
               <Code2 className="w-4 h-4 text-green-600" />
               <span className="text-xs text-green-700">组件已创建</span>
@@ -251,13 +270,17 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                   <div className="flex justify-start mt-2 space-x-2">
                     {msg.toolInvocations.map((tool: any, idx: number) => (
                       <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-blue-50 rounded-lg">
-                        {tool.toolName === 'EditReactComponent' ? (
+                        {tool.status === 'pending' ? (
+                          <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                        ) : tool.toolName === 'EditReactComponent' ? (
                           <Code2 className="w-3 h-3 text-blue-600" />
                         ) : (
                           <Eye className="w-3 h-3 text-blue-600" />
                         )}
                         <span className="text-xs text-blue-700">
-                          {tool.toolName === 'EditReactComponent' ? '组件已更新' : '预览已刷新'}
+                          {tool.toolName === 'EditReactComponent'
+                            ? (tool.status === 'pending' ? '组件更新中…' : '组件已更新')
+                            : (tool.status === 'pending' ? '预览刷新中…' : '预览已刷新')}
                         </span>
                       </div>
                     ))}
@@ -266,14 +289,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
               </div>
             ))}
             
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-2xl px-4 py-3 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
-                  <span className="text-sm text-gray-600">AI 正在思考...</span>
-                </div>
-              </div>
-            )}
+            {/* Streaming uses an assistant placeholder with 'Thinking', so no extra spinner here */}
             
             <div ref={messagesEndRef} />
           </div>
