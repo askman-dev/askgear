@@ -11,7 +11,10 @@ export default defineConfig(({ mode }) => ({
     hmr: mode === 'development' ? {
       protocol: 'wss',
       clientPort: 443
-    } : undefined
+    } : undefined,
+    watch: {
+      usePolling: true
+    }
   },
   preview: {
     host: '0.0.0.0',

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Send, ChevronDown, Sparkles, Loader2, Code2, Eye } from 'lucide-react';
-import { streamText } from 'ai';
+import { generateText, tool } from 'ai';
+import { z } from 'zod';
 import { openrouter, DEFAULT_MODEL } from '../lib/openrouter';
 import { useArtifactStore } from '../store/artifact';
 import clsx from 'clsx';
@@ -60,6 +61,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isSending = useRef(false);
   const { createArtifact, updateArtifact, currentArtifact } = useArtifactStore();
 
   // Auto-scroll to bottom
@@ -75,33 +77,36 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
   }, []);
 
   const handleSend = async (text?: string) => {
+    if (isSending.current) return;
+
     const userInput = text || input.trim();
-    if (!userInput || isLoading) return;
-
-    setInput('');
-    setIsLoading(true);
-
-    // Add user message
-    const userMessage: Message = {
-      id: `msg-${Date.now()}`,
-      role: 'user',
-      content: userInput,
-    };
-    setMessages(prev => [...prev, userMessage]);
-
-    // Add assistant message placeholder
-    const assistantId = `msg-${Date.now()}-assistant`;
-    const assistantMessage: Message = {
-      id: assistantId,
-      role: 'assistant',
-      content: '',
-    };
-    setMessages(prev => [...prev, assistantMessage]);
+    if (!userInput) return;
 
     try {
-      // Stream the response with tools
-      const { textStream, toolResults } = await streamText({
-        model: openrouter(DEFAULT_MODEL),
+      isSending.current = true;
+      setIsLoading(true);
+      setInput('');
+
+      // Add user message
+      const userMessage: Message = {
+        id: `msg-${Date.now()}`,
+        role: 'user',
+        content: userInput,
+      };
+      setMessages(prev => [...prev, userMessage]);
+
+      // Add assistant message placeholder
+      const assistantId = `msg-${Date.now()}-assistant`;
+      const assistantMessage: Message = {
+        id: assistantId,
+        role: 'assistant',
+        content: '',
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Generate the response with tools
+      const { text, toolResults } = await generateText({
+        model: openrouter.chat(DEFAULT_MODEL),
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages.map(m => ({
@@ -112,30 +117,14 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
           { role: 'user', content: userInput }
         ],
         tools: {
-          EditReactComponent: {
+          EditReactComponent: tool({
             description: 'Create or update a React component with the given code',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                code: {
-                  type: 'string',
-                  description: 'The complete React component code (TypeScript/JSX)'
-                },
-                title: {
-                  type: 'string',
-                  description: 'A title for the component'
-                },
-                description: {
-                  type: 'string',
-                  description: 'A brief description of what the component does'
-                },
-                imports: {
-                  type: 'string',
-                  description: 'Any additional import statements needed'
-                }
-              },
-              required: ['code']
-            },
+            inputSchema: z.object({
+              code: z.string().describe('The complete React component code (TypeScript/JSX)'),
+              title: z.string().describe('A title for the component').optional(),
+              description: z.string().describe('A brief description of what the component does').optional(),
+              imports: z.string().describe('Any additional import statements needed').optional(),
+            }),
             execute: async ({ code, title, description, imports }: any) => {
               // Create or update artifact
               const fullCode = COMPONENT_TEMPLATE(code, imports || '');
@@ -151,14 +140,10 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                 message: `Component ${title || 'created'} successfully`
               };
             }
-          },
-          Preview: {
+          }),
+          Preview: tool({
             description: 'Trigger a preview update to show the latest component changes',
-            inputSchema: {
-              type: 'object',
-              properties: {},
-              required: []
-            },
+            inputSchema: z.object({}),
             execute: async () => {
               // Send message to parent to update preview
               onPreviewUpdate?.();
@@ -173,28 +158,23 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                 message: 'Preview updated'
               };
             }
-          }
+          })
         }
       });
 
-      // Stream the text response
-      let fullContent = '';
-      for await (const chunk of textStream) {
-        fullContent += chunk;
-        setMessages(prev => prev.map(m => 
-          m.id === assistantId 
-            ? { ...m, content: fullContent }
-            : m
-        ));
-      }
+      // Update message with the full content
+      setMessages(prev => prev.map(m => 
+        m.id === assistantId 
+          ? { ...m, content: text }
+          : m
+      ));
 
       // Handle any tool results
-      const allToolResults = await toolResults;
-      if (allToolResults && allToolResults.length > 0) {
+      if (toolResults && toolResults.length > 0) {
         // Add tool result indicators to the message
         setMessages(prev => prev.map(m => 
           m.id === assistantId 
-            ? { ...m, toolInvocations: allToolResults }
+            ? { ...m, toolInvocations: toolResults }
             : m
         ));
       }
@@ -208,6 +188,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
       ));
     } finally {
       setIsLoading(false);
+      isSending.current = false;
     }
   };
 
