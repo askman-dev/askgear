@@ -42,17 +42,25 @@ AskGear is a mobile-first camera expert assistant app built with React, TypeScri
 - Also available: Claude Sonnet, Gemini Flash, Llama 3
 
 ## Recent Changes
-- October 9, 2025: Initial Replit setup
+- October 10, 2025: Initial Replit setup completed
+  - Installed all npm dependencies (228 packages)
   - Configured Vite for Replit environment (port 5000, 0.0.0.0 host)
-  - Set up HMR for proxy/iframe compatibility
-  - Added environment variables configuration
-  - Updated .gitignore for Node.js project
+  - Set up HMR for proxy/iframe compatibility with REPLIT_DEV_DOMAIN
+  - Configured OpenRouter API key via Replit Secrets (VITE_OPENROUTER_API_KEY)
+  - Updated .gitignore to exclude environment files
+  - Configured deployment for autoscale with build and preview
+  - Verified app is working with both tabs functional
 
 ## Development Workflow
 - Run `npm run dev` to start the development server
 - App available at the Replit webview URL
-- Changes hot-reload automatically
-- Chat messages persist across refreshes
+- Changes hot-reload automatically via HMR over WebSocket
+- Chat messages persist across refreshes in localStorage
+
+## Deployment Configuration
+- **Target**: Autoscale (stateless web app)
+- **Build**: `npm run build` (TypeScript compilation + Vite build)
+- **Run**: `npm run preview` (Vite preview server)
 
 ## User Preferences
 - Mobile-first design prioritized
