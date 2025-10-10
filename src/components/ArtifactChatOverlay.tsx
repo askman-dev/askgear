@@ -13,11 +13,17 @@ interface ArtifactChatOverlayProps {
   onPreviewUpdate?: () => void;
 }
 
+type Part =
+  | { id: string; type: 'text'; content: string }
+  | { id: string; type: 'tool'; toolName: string; status: 'pending' | 'done' | 'error'; args?: any };
+
 interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system' | 'tool';
-  content: string;
-  toolInvocations?: any[];
+  // For user/system messages
+  content?: string;
+  // For assistant messages (timeline parts)
+  parts?: Part[];
 }
 
 // Component template for new React components
@@ -86,7 +92,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
     setInput('');
 
     // 1) add user message
-    const userMsg = { id: `msg-${Date.now()}`, role: 'user' as const, content: userInput };
+    const userMsg: Message = { id: `msg-${Date.now()}`, role: 'user', content: userInput };
     const baseMessages: Message[] = [...messages, userMsg];
     setMessages(baseMessages);
 
@@ -94,23 +100,47 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
     const assistantId = `msg-${Date.now()}-assistant`;
     setMessages(prev => [
       ...prev,
-      { id: assistantId, role: 'assistant', content: 'Thinking', toolInvocations: [] }
+      { id: assistantId, role: 'assistant', parts: [{ id: `part-${Date.now()}`, type: 'text', content: 'Thinking' }] }
     ]);
 
     // Helpers to manage tool step badges
-    const addToolStep = (toolName: string, args?: any) => {
-      const callId = `tool-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      setMessages(prev => prev.map(m => m.id === assistantId
-        ? { ...m, toolInvocations: [ ...(m.toolInvocations || []), { id: callId, toolName, status: 'pending', args } ] }
-        : m
-      ));
-      return callId;
+    const appendAssistantText = (delta: string) => {
+      setMessages(prev => prev.map(m => {
+        if (m.id !== assistantId || !m.parts) return m;
+        const parts = [...m.parts];
+        const last = parts[parts.length - 1];
+        if (!last || last.type !== 'text') {
+          parts.push({ id: `part-${Date.now()}`, type: 'text', content: delta });
+        } else {
+          const textContent = last.content === 'Thinking' ? '' : last.content;
+          parts[parts.length - 1] = { ...last, content: textContent + delta };
+        }
+        return { ...m, parts };
+      }));
     };
-    const finishToolStep = (callId: string) => {
-      setMessages(prev => prev.map(m => m.id === assistantId
-        ? { ...m, toolInvocations: (m.toolInvocations || []).map((t: any) => t.id === callId ? { ...t, status: 'done' } : t) }
-        : m
-      ));
+    const addToolPart = (toolName: string, args?: any) => {
+      const partId = `part-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setMessages(prev => prev.map(m => {
+        if (m.id !== assistantId || !m.parts) return m;
+        const parts = [...m.parts, { id: partId, type: 'tool', toolName, status: 'pending', args } as Part];
+        return { ...m, parts };
+      }));
+      return partId;
+    };
+    const finishToolPart = (partId: string, status: 'done' | 'error' = 'done') => {
+      setMessages(prev => prev.map(m => {
+        if (m.id !== assistantId || !m.parts) return m;
+        const parts = m.parts.map(p => (p.id === partId && p.type === 'tool') ? { ...p, status } : p);
+        return { ...m, parts };
+      }));
+    };
+
+    const getTextFromMessage = (m: Message): string => {
+      if (m.content) return m.content;
+      if (m.parts) {
+        return m.parts.filter(p => p.type === 'text').map(p => (p as any).content).join('\n');
+      }
+      return '';
     };
 
     try {
@@ -119,7 +149,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
         stopWhen: stepCountIs(5),
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          ...baseMessages.map(m => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content }))
+          ...baseMessages.map(m => ({ role: m.role as 'user' | 'assistant' | 'system', content: getTextFromMessage(m) }))
         ],
         tools: {
           EditReactComponent: tool({
@@ -131,7 +161,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
               imports: z.string().describe('Any additional import statements needed').optional(),
             }),
             execute: async ({ code, title, description, imports }: any) => {
-              const callId = addToolStep('EditReactComponent', { title });
+              const partId = addToolPart('EditReactComponent', { title });
               const fullCode = COMPONENT_TEMPLATE(code, imports || '');
               if (currentArtifact) {
                 updateArtifact(currentArtifact.id, fullCode, { title, description });
@@ -139,7 +169,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                 createArtifact(fullCode, { title, description });
                 setShowCreatedBadge(true);
               }
-              finishToolStep(callId);
+              finishToolPart(partId, 'done');
               return { success: true, message: `Component ${title || 'created'} successfully` };
             }
           }),
@@ -147,10 +177,10 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
             description: 'Trigger a preview update to show the latest component changes',
             inputSchema: z.object({}),
             execute: async () => {
-              const callId = addToolStep('Preview');
+              const partId = addToolPart('Preview');
               onPreviewUpdate?.();
               window.dispatchEvent(new CustomEvent('artifact-preview-update', { detail: { artifactId: currentArtifact?.id } }));
-              finishToolStep(callId);
+              finishToolPart(partId, 'done');
               return { success: true, message: 'Preview updated' };
             }
           })
@@ -161,12 +191,22 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
       let full = '';
       for await (const chunk of textStream) {
         full += chunk;
-        const content = full.length > 0 ? full : 'Thinking';
-        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content } : m));
+        const content = full.length > 0 ? chunk : '';
+        if (content) appendAssistantText(content);
       }
     } catch (error) {
       console.error('Chat error:', error);
-      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '抱歉，处理您的请求时出现错误。请检查网络连接或 API 密钥配置。' } : m));
+      setMessages(prev => prev.map(m => {
+        if (m.id !== assistantId || !m.parts) return m;
+        const parts = [...m.parts];
+        const last = parts[parts.length - 1];
+        if (!last || last.type !== 'text') {
+          parts.push({ id: `part-${Date.now()}`, type: 'text', content: '抱歉，处理您的请求时出现错误。请检查网络连接或 API 密钥配置。' });
+        } else {
+          parts[parts.length - 1] = { ...last, content: '抱歉，处理您的请求时出现错误。请检查网络连接或 API 密钥配置。' };
+        }
+        return { ...m, parts };
+      }));
     } finally {
       setIsLoading(false);
       isSending.current = false;
@@ -253,39 +293,37 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                     msg.role === 'user' ? 'justify-end' : 'justify-start'
                   )}
                 >
-                  <div
-                    className={clsx(
-                      'max-w-[80%] rounded-2xl px-4 py-2.5',
-                      msg.role === 'user'
-                        ? 'bg-violet-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    )}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                </div>
-                
-                {/* Tool invocation indicators */}
-                {msg.toolInvocations && msg.toolInvocations.length > 0 && (
-                  <div className="flex justify-start mt-2 space-x-2">
-                    {msg.toolInvocations.map((tool: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-blue-50 rounded-lg">
-                        {tool.status === 'pending' ? (
-                          <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                        ) : tool.toolName === 'EditReactComponent' ? (
-                          <Code2 className="w-3 h-3 text-blue-600" />
+                  {msg.role === 'user' ? (
+                    <div className={clsx('max-w-[80%] rounded-2xl px-4 py-2.5', 'bg-violet-600 text-white')}>
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  ) : (
+                    <div className="max-w-[80%] space-y-2">
+                      {(msg.parts || []).map(part => (
+                        part.type === 'text' ? (
+                          <div key={part.id} className={clsx('rounded-2xl px-4 py-2.5', 'bg-gray-100 text-gray-900')}>
+                            <p className="text-sm whitespace-pre-wrap">{part.content}</p>
+                          </div>
                         ) : (
-                          <Eye className="w-3 h-3 text-blue-600" />
-                        )}
-                        <span className="text-xs text-blue-700">
-                          {tool.toolName === 'EditReactComponent'
-                            ? (tool.status === 'pending' ? '组件更新中…' : '组件已更新')
-                            : (tool.status === 'pending' ? '预览刷新中…' : '预览已刷新')}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          <div key={part.id} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg w-fit">
+                            {part.status === 'pending' ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                            ) : part.toolName === 'EditReactComponent' ? (
+                              <Code2 className="w-3.5 h-3.5 text-blue-600" />
+                            ) : (
+                              <Eye className="w-3.5 h-3.5 text-blue-600" />
+                            )}
+                            <span className="text-xs text-blue-700">
+                              {part.toolName === 'EditReactComponent'
+                                ? (part.status === 'pending' ? '组件更新中…' : part.status === 'done' ? '组件已更新' : '组件更新失败')
+                                : (part.status === 'pending' ? '预览刷新中…' : part.status === 'done' ? '预览已刷新' : '预览刷新失败')}
+                            </span>
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
             
