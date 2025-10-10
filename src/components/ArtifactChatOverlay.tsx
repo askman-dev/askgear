@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Send, ChevronDown, Sparkles, Loader2, Code2, Eye } from 'lucide-react';
-import { generateText, tool } from 'ai';
+import { generateText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { openrouter, DEFAULT_MODEL } from '../lib/openrouter';
 import { useArtifactStore } from '../store/artifact';
@@ -61,7 +61,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isSending = useRef(false);
+  const isSending = useRef(false); // Synchronous guard
   const { createArtifact, updateArtifact, currentArtifact } = useArtifactStore();
 
   // Auto-scroll to bottom
@@ -74,48 +74,28 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
     if (initialText && messages.length === 0) {
       handleSend(initialText);
     }
-  }, []);
+  }, [initialText]); // Depend on initialText
 
   const handleSend = async (text?: string) => {
-    if (isSending.current) return;
-
     const userInput = text || input.trim();
-    if (!userInput) return;
+    if (!userInput || isLoading || isSending.current) return;
+
+    isSending.current = true;
+    setIsLoading(true);
+    setInput('');
+
+    const newMessages: Message[] = [
+      ...messages,
+      { id: `msg-${Date.now()}`, role: 'user', content: userInput },
+    ];
+    setMessages(newMessages);
 
     try {
-      isSending.current = true;
-      setIsLoading(true);
-      setInput('');
-
-      // Add user message
-      const userMessage: Message = {
-        id: `msg-${Date.now()}`,
-        role: 'user',
-        content: userInput,
-      };
-      setMessages(prev => [...prev, userMessage]);
-
-      // Add assistant message placeholder
-      const assistantId = `msg-${Date.now()}-assistant`;
-      const assistantMessage: Message = {
-        id: assistantId,
-        role: 'assistant',
-        content: '',
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-
-      // Generate the response with tools
-      const { text, toolResults } = await generateText({
+      const { text: finalText, steps } = await generateText({
         model: openrouter.chat(DEFAULT_MODEL),
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...messages.map(m => ({
-            role: m.role as any,
-            content: m.content,
-            toolInvocations: m.toolInvocations
-          })),
-          { role: 'user', content: userInput }
-        ],
+        system: SYSTEM_PROMPT,
+        messages: newMessages,
+        stopWhen: stepCountIs(20), // Enable agent loop
         tools: {
           EditReactComponent: tool({
             description: 'Create or update a React component with the given code',
@@ -126,70 +106,57 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
               imports: z.string().describe('Any additional import statements needed').optional(),
             }),
             execute: async ({ code, title, description, imports }: any) => {
-              // Create or update artifact
               const fullCode = COMPONENT_TEMPLATE(code, imports || '');
-              
               if (currentArtifact) {
                 updateArtifact(currentArtifact.id, fullCode, { title, description });
               } else {
                 createArtifact(fullCode, { title, description });
               }
-              
-              return {
-                success: true,
-                message: `Component ${title || 'created'} successfully`
-              };
+              return { success: true, message: `Component ${title || 'created'} successfully` };
             }
           }),
           Preview: tool({
             description: 'Trigger a preview update to show the latest component changes',
             inputSchema: z.object({}),
             execute: async () => {
-              // Send message to parent to update preview
               onPreviewUpdate?.();
-              
-              // Dispatch custom event for preview update
-              window.dispatchEvent(new CustomEvent('artifact-preview-update', {
-                detail: { artifactId: currentArtifact?.id }
-              }));
-              
-              return {
-                success: true,
-                message: 'Preview updated'
-              };
+              window.dispatchEvent(new CustomEvent('artifact-preview-update', { detail: { artifactId: currentArtifact?.id } }));
+              return { success: true, message: 'Preview updated' };
             }
           })
         }
       });
 
-      // Update message with the full content
-      setMessages(prev => prev.map(m => 
-        m.id === assistantId 
-          ? { ...m, content: text }
-          : m
-      ));
+      // Construct the final assistant message with tool invocations from the steps
+      const assistantMessage: Message = {
+        id: `msg-${Date.now()}-assistant`,
+        role: 'assistant',
+        content: finalText,
+        toolInvocations: steps.flatMap(step => step.toolCalls.map(toolCall => ({
+          toolName: toolCall.toolName,
+          args: toolCall.args,
+        }))),
+      };
 
-      // Handle any tool results
-      if (toolResults && toolResults.length > 0) {
-        // Add tool result indicators to the message
-        setMessages(prev => prev.map(m => 
-          m.id === assistantId 
-            ? { ...m, toolInvocations: toolResults }
-            : m
-        ));
-      }
+      setMessages(prev => [...prev, assistantMessage]);
 
     } catch (error) {
       console.error('Chat error:', error);
-      setMessages(prev => prev.map(m => 
-        m.id === assistantId 
-          ? { ...m, content: '抱歉，处理您的请求时出现错误。请检查网络连接或 API 密钥配置。' }
-          : m
-      ));
+      const errorResponseMessage: Message = {
+        id: `msg-${Date.now()}-error`,
+        role: 'assistant',
+        content: '抱歉，处理您的请求时出现错误。请检查网络连接或 API 密钥配置。'
+      };
+      setMessages(prev => [...prev, errorResponseMessage]);
     } finally {
       setIsLoading(false);
       isSending.current = false;
     }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSend();
   };
 
   return (
@@ -312,7 +279,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
           </div>
 
           {/* Input Area */}
-          <div className="border-t border-gray-200 p-4">
+          <form onSubmit={handleFormSubmit} className="border-t border-gray-200 p-4">
             <div className="flex items-end gap-2">
               <div className="flex-1 min-h-[44px] max-h-32 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2 flex items-center">
                 <input
@@ -322,7 +289,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      handleSend();
+                      handleFormSubmit(e as any);
                     }
                   }}
                   placeholder="描述组件功能或粘贴数据..."
@@ -331,7 +298,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                 />
               </div>
               <button
-                onClick={() => handleSend()}
+                type="submit"
                 disabled={!input.trim() || isLoading}
                 className="shrink-0 w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -342,7 +309,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                 )}
               </button>
             </div>
-          </div>
+          </form>
         </>
       )}
     </div>
