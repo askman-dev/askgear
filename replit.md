@@ -50,6 +50,12 @@ AskGear is a mobile-first camera expert assistant app built with React, TypeScri
 - Also available: Claude Sonnet, Gemini Flash, Llama 3
 
 ## Recent Changes
+- October 10, 2025: Enhanced Data Extraction UI
+  - Added top navigation bar with back button to ArtifactCreationView
+  - Unified all three extraction sheets with "Continue" button in top-right corner
+  - Added preset content button to TextExtractSheet with camera comparison table
+  - All extraction methods (text/web/image) now route to artifact creation interface
+
 - October 10, 2025: Artifact Creation Feature
   - Modified TextExtractSheet to display continue button in top-right corner
   - Created ArtifactCreationView component for full-screen artifact interface
