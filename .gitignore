@@ -27,3 +27,18 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Gemini CLI session files
+.gemini/
+.gemini-clipboard/
+
+# Temporary files
+*.timestamp-*
+
+# Yarn PnP cache files
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+
+# Lockfiles (use Yarn)
+package-lock.json

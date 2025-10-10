@@ -210,7 +210,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
             <ChevronDown
               className={clsx(
                 'w-5 h-5 text-gray-600 transition-transform',
-                isExpanded && 'rotate-180'
+                isExpanded ? '' : 'rotate-180'
               )}
             />
           </button>
