@@ -100,7 +100,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
     const assistantId = `msg-${Date.now()}-assistant`;
     setMessages(prev => [
       ...prev,
-      { id: assistantId, role: 'assistant', parts: [{ id: `part-${Date.now()}`, type: 'text', content: 'Thinking' }] }
+      { id: assistantId, role: 'assistant', parts: [] }
     ]);
 
     // Helpers to manage tool step badges
@@ -112,8 +112,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
         if (!last || last.type !== 'text') {
           parts.push({ id: `part-${Date.now()}`, type: 'text', content: delta });
         } else {
-          const textContent = last.content === 'Thinking' ? '' : last.content;
-          parts[parts.length - 1] = { ...last, content: textContent + delta };
+          parts[parts.length - 1] = { ...last, content: last.content + delta };
         }
         return { ...m, parts };
       }));
@@ -329,6 +328,15 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
             
             {/* Streaming uses an assistant placeholder with 'Thinking', so no extra spinner here */}
             
+            {isLoading && !messages.some(m => m.role === 'assistant' && (m.parts || []).some((p: any) => p.type === 'tool' && p.status === 'pending')) && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg w-fit">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                  <span className="text-xs text-blue-700">Thinking…</span>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
