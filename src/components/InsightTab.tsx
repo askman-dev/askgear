@@ -88,12 +88,12 @@ export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
       <WebExtractSheet
         open={openWebSheet}
         onClose={() => setOpenWebSheet(false)}
-        onContinue={(url) => onStartChat?.({ prefill: `请访问以下网页并提取结构化数据，返回 Markdown 表格：\n${url}` })}
+        onContinue={(url) => onStartArtifact?.(`从网页提取数据：${url}`)}
       />
       <ImageExtractSheet
         open={openImageSheet}
         onClose={() => setOpenImageSheet(false)}
-        onContinue={() => onStartChat?.({ prefill: '我将上传一张图片，请识别图中信息（如表格/票据/表单）并提取为结构化数据。' })}
+        onContinue={() => onStartArtifact?.('从图片提取数据：用户已选择图片')}
       />
     </div>
   );
