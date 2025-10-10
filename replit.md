@@ -19,26 +19,37 @@ AskGear is a mobile-first camera expert assistant app built with React, TypeScri
   - `ChatTab.tsx` - AI chat interface with streaming responses
   - `InsightTab.tsx` - Main tab with data extraction options
   - `BottomSheet.tsx` - Modal sheet component
-  - `TextExtractSheet.tsx` - Text input modal with continue button
+  - `TextExtractSheet.tsx` - Text input modal with continue button and preset content
   - `ArtifactCreationView.tsx` - Full-screen artifact creation interface
-  - `ArtifactChatOverlay.tsx` - Floating chat overlay for artifact creation
-  - Other extract sheets for future features
+  - `ArtifactChatOverlay.tsx` - AI-powered chat with tool calling for component creation
+  - `ComponentPreview.tsx` - Dynamic React component renderer with safe evaluation
+  - `WebExtractSheet.tsx` - Web URL extraction sheet
+  - `ImageExtractSheet.tsx` - Image upload and extraction sheet
 - `src/lib/` - API clients and utilities
   - `openrouter.ts` - OpenRouter API client configuration
 - `src/store/` - Zustand state management
   - `chat.ts` - Chat state with localStorage persistence
+  - `artifact.ts` - Component artifact storage and management
 
 ### Key Features
 1. Bottom tab navigation between Insight and History tabs
 2. Text extraction flow with continue button in top-right corner
-3. Artifact creation interface with multi-layer UI:
-   - Bottom layer: React component preview area
-   - Floating overlay: Multi-turn chat interface for component creation
-4. Chat tab with multi-turn AI conversations
-5. Streaming AI responses via OpenRouter
-6. Message history persists (last 20 messages in localStorage)
-7. Mobile-first responsive design with 48px touch targets
-8. Dynamic view switching (main/chat/artifact)
+3. **AI-Powered Component Creation**:
+   - Multi-turn chat with Vercel AI SDK tool calling
+   - EditReactComponent tool: Creates React components from descriptions
+   - Preview tool: Updates component preview in real-time
+   - Safe component evaluation with sandboxed context
+   - Pre-imported libraries: React, Tailwind CSS, Lucide icons, clsx
+   - Components stored in localStorage for persistence
+4. Artifact creation interface with multi-layer UI:
+   - Bottom layer: Dynamic React component preview
+   - Floating overlay: AI chat interface with tool calling
+   - Real-time component updates as you chat
+5. Chat tab with multi-turn AI conversations
+6. Streaming AI responses via OpenRouter
+7. Message and artifact persistence in localStorage
+8. Mobile-first responsive design with 48px touch targets
+9. Dynamic view switching (main/chat/artifact)
 
 ### Configuration
 - **Server**: Vite dev server on port 5000 (0.0.0.0)
@@ -48,6 +59,26 @@ AskGear is a mobile-first camera expert assistant app built with React, TypeScri
 ### AI Models Available
 - Default: `openai/gpt-4o-mini` (fast and cost-effective)
 - Also available: Claude Sonnet, Gemini Flash, Llama 3
+
+### AI Component Creation System
+The artifact creation feature uses AI to generate React components from natural language descriptions or structured data:
+
+**How it works:**
+1. User provides text/data or describes desired component
+2. AI chat uses tool calling to create React components
+3. Components are evaluated and rendered in real-time
+4. Created components are stored in localStorage
+
+**Available in preview context:**
+- React hooks (useState, useEffect, etc.)
+- Tailwind CSS for styling
+- All Lucide React icons
+- clsx for conditional classes
+
+**Safety:**
+- Components run in sandboxed evaluation context
+- Error boundaries prevent crashes
+- Clear error messages for debugging
 
 ## Recent Changes
 - October 10, 2025: Enhanced Data Extraction UI
