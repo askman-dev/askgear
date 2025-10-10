@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { ArtifactChatOverlay } from './ArtifactChatOverlay';
+import { ComponentPreview } from './ComponentPreview';
 
 interface ArtifactCreationViewProps {
   initialText?: string;
@@ -9,6 +10,12 @@ interface ArtifactCreationViewProps {
 
 export function ArtifactCreationView({ initialText, onBack }: ArtifactCreationViewProps) {
   const [showChat, setShowChat] = useState(true);
+  const [previewKey, setPreviewKey] = useState(0);
+
+  // Handle preview update from chat
+  const handlePreviewUpdate = () => {
+    setPreviewKey(prev => prev + 1);
+  };
 
   return (
     <div className="relative h-full w-full bg-gray-100">
@@ -31,20 +38,9 @@ export function ArtifactCreationView({ initialText, onBack }: ArtifactCreationVi
 
       {/* Bottom Layer: Component Preview - adjusted padding for header */}
       <div className="absolute inset-0 pt-16 flex items-center justify-center">
-        <div className="max-w-4xl w-full p-8">
-          <div className="bg-white rounded-2xl shadow-lg p-8 min-h-[400px]">
-            {/* Placeholder for React component preview */}
-            <div className="text-center text-gray-500">
-              <div className="inline-block p-6 bg-gray-50 rounded-xl mb-4">
-                <div className="w-24 h-24 bg-gradient-to-br from-violet-400 to-purple-400 rounded-2xl" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                组件预览区域
-              </h3>
-              <p className="text-sm text-gray-600">
-                通过对话创建的 React 组件将在此处实时渲染预览
-              </p>
-            </div>
+        <div className="max-w-4xl w-full h-full p-8">
+          <div className="bg-white rounded-2xl shadow-lg p-8 h-full overflow-auto">
+            <ComponentPreview key={previewKey} className="h-full" />
           </div>
         </div>
       </div>
@@ -55,6 +51,7 @@ export function ArtifactCreationView({ initialText, onBack }: ArtifactCreationVi
           initialText={initialText}
           onClose={() => setShowChat(false)}
           onBack={onBack}
+          onPreviewUpdate={handlePreviewUpdate}
         />
       )}
 
