@@ -17,8 +17,17 @@ export function TextExtractSheet({ open, onClose, onContinue }: TextExtractSheet
 
   return (
     <BottomSheet open={open} onClose={onClose}>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-3">从文本提取</h2>
-      <div className="mb-16">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-2xl font-semibold text-gray-900">从文本提取</h2>
+        <button
+          onClick={handleContinue}
+          className="px-5 h-10 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!text.trim()}
+        >
+          继续
+        </button>
+      </div>
+      <div className="mb-4">
         <div className="rounded-xl border border-gray-300 bg-gray-50">
           <textarea
             value={text}
@@ -28,21 +37,6 @@ export function TextExtractSheet({ open, onClose, onContinue }: TextExtractSheet
             className="w-full p-4 bg-transparent outline-none resize-none text-gray-900"
           />
         </div>
-      </div>
-      <div className="absolute bottom-4 right-4 left-4 flex justify-end gap-3">
-        <button
-          onClick={onClose}
-          className="px-4 h-10 rounded-full bg-gray-100 text-gray-800 shadow-sm active:scale-[0.98]"
-        >
-          取消
-        </button>
-        <button
-          onClick={handleContinue}
-          className="px-5 h-10 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98] disabled:opacity-50"
-          disabled={!text.trim()}
-        >
-          继续
-        </button>
       </div>
     </BottomSheet>
   );
