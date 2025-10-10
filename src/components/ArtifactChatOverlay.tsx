@@ -14,7 +14,7 @@ interface Message {
   content: string;
 }
 
-export function ArtifactChatOverlay({ initialText, onClose, onBack }: ArtifactChatOverlayProps) {
+export function ArtifactChatOverlay({ initialText, onClose }: ArtifactChatOverlayProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isExpanded, setIsExpanded] = useState(true);

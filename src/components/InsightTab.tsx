@@ -7,9 +7,10 @@ import { ImageExtractSheet } from './ImageExtractSheet';
 
 interface InsightTabProps {
   onStartChat?: (opts?: { prefill?: string }) => void;
+  onStartArtifact?: (text: string) => void;
 }
 
-export function InsightTab({ onStartChat }: InsightTabProps) {
+export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
   const [openTextSheet, setOpenTextSheet] = useState(false);
   const [openWebSheet, setOpenWebSheet] = useState(false);
   const [openImageSheet, setOpenImageSheet] = useState(false);
@@ -82,7 +83,7 @@ export function InsightTab({ onStartChat }: InsightTabProps) {
       <TextExtractSheet
         open={openTextSheet}
         onClose={() => setOpenTextSheet(false)}
-        onContinue={(txt) => onStartChat?.({ prefill: `请从以下文本中提取结构化数据，并以 Markdown 表格返回。\n\n${txt}` })}
+        onContinue={(txt) => onStartArtifact?.(txt)}
       />
       <WebExtractSheet
         open={openWebSheet}

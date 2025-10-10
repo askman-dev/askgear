@@ -3,14 +3,17 @@ import { Star, History } from 'lucide-react';
 import { TopQueriesTab } from './TopQueriesTab';
 import { ChatTab } from './ChatTab';
 import { InsightTab } from './InsightTab';
+import { ArtifactCreationView } from './ArtifactCreationView';
 import clsx from 'clsx';
 
 type TabId = 'start' | 'history';
+type ViewType = 'main' | 'chat' | 'artifact';
 
 export function BottomTabs() {
   const [activeTab, setActiveTab] = useState<TabId>('start');
-  const [view, setView] = useState<'main' | 'chat'>('main');
+  const [view, setView] = useState<ViewType>('main');
   const [chatPrefill, setChatPrefill] = useState<string | undefined>(undefined);
+  const [artifactText, setArtifactText] = useState<string | undefined>(undefined);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -18,17 +21,26 @@ export function BottomTabs() {
       <div className="flex flex-col h-screen max-w-2xl mx-auto w-full bg-white shadow-lg">
         {/* Tab Content */}
         <div className="flex-1 overflow-hidden">
-          {view === 'chat' ? (
+          {view === 'artifact' ? (
+            <ArtifactCreationView 
+              initialText={artifactText} 
+              onBack={() => setView('main')} 
+            />
+          ) : view === 'chat' ? (
             <ChatTab onBack={() => setView('main')} initialInput={chatPrefill} />
           ) : activeTab === 'start' ? (
-            <InsightTab onStartChat={(opts) => { setChatPrefill(opts?.prefill); setView('chat'); }} />
+            <InsightTab 
+              onStartChat={(opts) => { setChatPrefill(opts?.prefill); setView('chat'); }}
+              onStartArtifact={(text: string) => { setArtifactText(text); setView('artifact'); }}
+            />
           ) : (
             <TopQueriesTab />
           )}
         </div>
 
-        {/* Bottom Tab Bar */}
-        <nav className="flex border-t border-gray-200 bg-white">
+        {/* Bottom Tab Bar - hide in artifact/chat view */}
+        {view === 'main' && (
+          <nav className="flex border-t border-gray-200 bg-white">
           <button
             onClick={() => {
               setView('main');
@@ -79,6 +91,7 @@ export function BottomTabs() {
             </span>
           </button>
         </nav>
+        )}
       </div>
     </div>
   );
