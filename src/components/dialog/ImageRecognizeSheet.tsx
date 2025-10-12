@@ -68,7 +68,7 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
 
   return (
     <BottomSheet open={open} onClose={onClose}>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 pr-1">
         <h2 className="text-2xl font-semibold text-gray-900">识别题目</h2>
         <div className="text-sm text-gray-500">
           {status === 'analyzing' && (
