@@ -2,7 +2,6 @@ import { Bookmark, Folder, MoreVertical } from 'lucide-react';
 import { IngestCard } from './IngestCard';
 import { useState } from 'react';
 import { TextExtractSheet } from './TextExtractSheet';
-import { WebExtractSheet } from './WebExtractSheet';
 import { ImageExtractSheet } from './ImageExtractSheet';
 
 interface InsightTabProps {
@@ -12,7 +11,6 @@ interface InsightTabProps {
 
 export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
   const [openTextSheet, setOpenTextSheet] = useState(false);
-  const [openWebSheet, setOpenWebSheet] = useState(false);
   const [openImageSheet, setOpenImageSheet] = useState(false);
   return (
     <div className="h-full overflow-y-auto bg-violet-50">
@@ -31,9 +29,9 @@ export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
       </header>
 
       <div className="p-4 space-y-6">
-        {/* Section: I have data */}
+        {/* Section: 解题 */}
         <div>
-          <div className="text-gray-800 font-semibold mb-3">我已经有数据 ...</div>
+          <div className="text-gray-800 font-semibold mb-3">解题</div>
           <div className="space-y-3">
             <IngestCard
               title="从文本提取"
@@ -41,14 +39,26 @@ export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
               onClick={() => setOpenTextSheet(true)}
             />
             <IngestCard
-              title="从网页提取"
-              description="输入网址，从页面中提取数据"
-              onClick={() => setOpenWebSheet(true)}
-            />
-            <IngestCard
               title="从图片提取"
               description="上传图片，识别图中信息并提取出数据"
               onClick={() => setOpenImageSheet(true)}
+            />
+          </div>
+        </div>
+
+        {/* Section: 找题 */}
+        <div className="pt-2">
+          <div className="text-gray-800 font-semibold mb-3">找题</div>
+          <div className="space-y-3">
+            <IngestCard
+              title="找相似题"
+              description="根据当前题目寻找相似题目"
+              onClick={() => onStartChat?.({ prefill: '帮我找一些相似的题目：' })}
+            />
+            <IngestCard
+              title="提出要求"
+              description="说出你的要求，让 AI 帮你出题"
+              onClick={() => onStartChat?.({ prefill: '根据以下要求出题：' })}
             />
           </div>
         </div>
@@ -84,11 +94,6 @@ export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
         open={openTextSheet}
         onClose={() => setOpenTextSheet(false)}
         onContinue={(txt) => onStartArtifact?.(txt)}
-      />
-      <WebExtractSheet
-        open={openWebSheet}
-        onClose={() => setOpenWebSheet(false)}
-        onContinue={(url) => onStartArtifact?.(`从网页提取数据：${url}`)}
       />
       <ImageExtractSheet
         open={openImageSheet}

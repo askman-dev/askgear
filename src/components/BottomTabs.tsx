@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Star, History } from 'lucide-react';
+import { Star, History, Trophy } from 'lucide-react';
 import { TopQueriesTab } from './TopQueriesTab';
 import { ChatTab } from './ChatTab';
 import { InsightTab } from './InsightTab';
 import { ArtifactCreationView } from './ArtifactCreationView';
+import { ChallengeTab } from './ChallengeTab';
 import clsx from 'clsx';
 
-type TabId = 'start' | 'history';
+type TabId = 'start' | 'history' | 'challenge';
 type ViewType = 'main' | 'chat' | 'artifact';
 
 export function BottomTabs() {
@@ -33,8 +34,10 @@ export function BottomTabs() {
               onStartChat={(opts) => { setChatPrefill(opts?.prefill); setView('chat'); }}
               onStartArtifact={(text: string) => { setArtifactText(text); setView('artifact'); }}
             />
-          ) : (
+          ) : activeTab === 'history' ? (
             <TopQueriesTab />
+          ) : (
+            <ChallengeTab />
           )}
         </div>
 
@@ -88,6 +91,31 @@ export function BottomTabs() {
             >
               <History className="w-5 h-5" />
               <span className="text-sm font-medium">历史</span>
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setView('main');
+              setActiveTab('challenge');
+            }}
+            className={clsx(
+              'flex-1 flex items-center justify-center',
+              'min-h-[56px] py-2 px-2',
+              'transition-colors duration-200',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500'
+            )}
+          >
+            <span
+              className={clsx(
+                'inline-flex items-center gap-1 px-3 py-1 rounded-full',
+                activeTab === 'challenge'
+                  ? 'bg-violet-100 text-violet-700'
+                  : 'text-gray-600'
+              )}
+            >
+              <Trophy className="w-5 h-5" />
+              <span className="text-sm font-medium">挑战</span>
             </span>
           </button>
         </nav>
