@@ -65,7 +65,7 @@ export function BottomTabs() {
               )}
             >
               <Star className="w-5 h-5" />
-              <span className="text-sm font-medium">开始</span>
+              <span className="text-sm font-medium">练习</span>
             </span>
           </button>
 
