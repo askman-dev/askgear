@@ -8,6 +8,23 @@ export function useConversation(config?: ConversationConfig) {
   const currentAssistantIdRef = useRef<string | null>(null);
   const sendingRef = useRef(false);
 
+  // Compute the minimal suffix to append from an incoming delta to avoid duplicated text
+  function computeDeltaSuffix(prevText: string, delta: string): string {
+    if (!delta) return '';
+    if (!prevText) return delta;
+    // If the provider sends snapshots that start with previous text
+    if (delta.startsWith(prevText)) return delta.slice(prevText.length);
+    // Find the largest overlap between suffix(prev) and prefix(delta)
+    const maxOverlap = Math.min(prevText.length, 200);
+    for (let k = maxOverlap; k > 0; k--) {
+      if (prevText.slice(-k) === delta.slice(0, k)) {
+        return delta.slice(k);
+      }
+    }
+    // No overlap — append as-is
+    return delta;
+  }
+
   const addToolPart = useCallback((toolName: string, args?: any) => {
     const partId = `part-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const assistantId = currentAssistantIdRef.current;
@@ -38,7 +55,9 @@ export function useConversation(config?: ConversationConfig) {
       if (!last || last.type !== 'text') {
         parts.push({ id: `part-${Date.now()}`, type: 'text', content: delta } as any);
       } else {
-        (last as any).content = (last as any).content + delta;
+        const prevText = (last as any).content as string;
+        const toAppend = computeDeltaSuffix(prevText, delta);
+        (last as any).content = prevText + toAppend;
       }
       return { ...m, parts } as Message;
     }));
@@ -52,7 +71,9 @@ export function useConversation(config?: ConversationConfig) {
       if (!last || last.type !== 'reasoning') {
         parts.push({ id: `part-${Date.now()}`, type: 'reasoning', content: delta } as any);
       } else {
-        (last as any).content = (last as any).content + delta;
+        const prevText = (last as any).content as string;
+        const toAppend = computeDeltaSuffix(prevText, delta);
+        (last as any).content = prevText + toAppend;
       }
       return { ...m, parts } as Message;
     }));
@@ -105,12 +126,15 @@ export function useConversation(config?: ConversationConfig) {
         for await (const part of (result as any).fullStream) {
           const t = String(part?.type ?? '');
           const delta = String(
-            part?.text ?? part?.textDelta ?? part?.delta?.text ?? part?.delta?.output_text ?? ''
+            part?.textDelta ?? part?.delta?.text ?? part?.delta?.output_text ?? part?.text ?? ''
           );
           if (!delta) continue;
-          if (t.includes('reasoning')) {
+          const isReasoning = t === 'reasoning-delta' || t === 'response.reasoning.delta' || /reasoning-?delta$/.test(t);
+          const isText = t === 'text-delta' || t === 'response.output_text.delta' || /output_text\.delta$/.test(t) || /(^|\.)text-delta$/.test(t);
+
+          if (isReasoning) {
             appendAssistantReasoning(assistantId, delta);
-          } else if (t.includes('text')) {
+          } else if (isText) {
             appendAssistantText(assistantId, delta);
           }
         }

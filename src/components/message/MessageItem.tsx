@@ -25,10 +25,12 @@ export function MessageItem({ message }: MessageItemProps) {
 
     return (
       <div className="p-4 rounded-xl bg-gray-100 border border-gray-200">
-        <p className="text-sm text-gray-800 whitespace-pre-wrap"><span className="font-semibold">题目：</span>{text}</p>
-        {imageUrl && (
-          <img src={imageUrl} alt="Problem source" className="mt-3 w-24 h-24 object-contain rounded-lg border bg-white" />
-        )}
+        <div className="flex items-start gap-3">
+          <span className="text-sm font-semibold text-gray-800 whitespace-nowrap leading-6">题目：</span>
+          {imageUrl && (
+            <img src={imageUrl} alt="Problem source" className="w-24 h-24 object-contain rounded-lg border bg-white" />
+          )}
+        </div>
         <div className="flex items-center gap-2 mt-3">
           <span className="text-sm font-semibold text-gray-800">风格：</span>
           <span className="px-3 py-1 rounded-full bg-white text-sm text-gray-700 border border-gray-200">小学生思维</span>
@@ -81,4 +83,3 @@ export function MessageItem({ message }: MessageItemProps) {
     </div>
   );
 }
-
