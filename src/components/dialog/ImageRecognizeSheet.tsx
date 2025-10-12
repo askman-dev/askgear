@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { BottomSheet } from '../ui/BottomSheet';
 import { useRecognizeQuestions } from '@features/recognize/useRecognizeQuestions';
 import type { ImageRef, RecognizedQuestion } from '@features/recognize';
-import { ThinkingIndicator } from '../ui/ThinkingIndicator';
 import clsx from 'clsx';
 import { Loader2 } from 'lucide-react';
 
@@ -147,7 +146,10 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
                 className="shrink-0 px-4 h-9 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98]"
                 onClick={(e) => {
                   e.stopPropagation();
-                  image && onContinue?.({ image, question: q });
+                  image && onContinue?.({
+                    image,
+                    question: { ...q, text: q.text ?? '' },
+                  });
                 }}
               >
                 解题

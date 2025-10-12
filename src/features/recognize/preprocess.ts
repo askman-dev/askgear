@@ -8,16 +8,19 @@ export interface PreprocessResult {
 
 // Resize keeping aspect ratio so that max(width, height) <= 1024.
 export async function preprocessImageToMax1024(input: File | string): Promise<PreprocessResult> {
-  const src = typeof input === 'string' ? input : URL.createObjectURL(input);
+  // If the input is a File, convert it to a data: URL. Otherwise, assume it's already a URL.
+  const src = typeof input === 'string' ? input : await blobToDataURL(input);
+
   try {
     const img = await loadImage(src);
     const { canvas, width, height } = drawToMaxCanvas(img, 1024);
     const mimeType = hasTransparency(canvas) ? 'image/png' : 'image/jpeg';
     const blob: Blob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b as Blob), mimeType, 0.85));
-    const dataUrl = await blobToDataURL(blob);
+    const dataUrl = await blobToDataURL(blob); // Convert the processed canvas back to a dataUrl for the result
     return { blob, mimeType, width, height, dataUrl };
-  } finally {
-    if (typeof input !== 'string') URL.revokeObjectURL(src);
+  } catch (error) {
+    // Rethrow to notify the caller.
+    throw error;
   }
 }
 
@@ -26,7 +29,9 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Failed to load image'));
+    img.onerror = (err) => {
+      reject(new Error('Failed to load image', { cause: err }));
+    };
     img.src = src;
   });
 }

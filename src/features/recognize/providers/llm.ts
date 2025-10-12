@@ -42,8 +42,11 @@ export const LLMRecognizer: RecognizeQuestionsProvider = {
       onEvent?.({ type: "progress", stage: "analyzing" });
 
       // Preprocess image (max side 1024)
-      const source = input.image.file ?? input.image.src;
-      const pre = await preprocessImageToMax1024(source as any);
+      const source = input.image.file;
+      if (!source) {
+        throw new Error('Image file object is missing in Recognizer input.');
+      }
+      const pre = await preprocessImageToMax1024(source);
 
       // Compose multi-modal message
       const messages = [
@@ -68,7 +71,7 @@ export const LLMRecognizer: RecognizeQuestionsProvider = {
         model,
         messages: messages as any,
         abortSignal: signal,
-        providerOptions: { openrouter: { reasoning: { effort: "medium" } } },
+        providerOptions: { openrouter: { reasoning: { effort: "low" } } },
       } as any);
       // fullStream listening start
       for await (const part of (fullResultHandle as any).fullStream) {

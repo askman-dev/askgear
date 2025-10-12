@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Star, History, Trophy } from 'lucide-react';
 import { AchievementsPage, ChatPage, PracticePage, ArtifactPage, ChallengePage } from '@pages/index';
 import clsx from 'clsx';
+import type { SolveInput } from '@features/recognize';
 
 type TabId = 'start' | 'history' | 'challenge';
 type ViewType = 'main' | 'chat' | 'artifact';
@@ -11,6 +12,7 @@ export function BottomTabs() {
   const [view, setView] = useState<ViewType>('main');
   const [chatPrefill, setChatPrefill] = useState<string | undefined>(undefined);
   const [artifactText, setArtifactText] = useState<string | undefined>(undefined);
+  const [solveContext, setSolveContext] = useState<SolveInput | null>(null);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -21,10 +23,24 @@ export function BottomTabs() {
           {view === 'artifact' ? (
             <ArtifactPage initialText={artifactText} onBack={() => setView('main')} />
           ) : view === 'chat' ? (
-            <ChatPage onBack={() => setView('main')} initialInput={chatPrefill} />
+            <ChatPage
+              onBack={() => {
+                setView('main');
+                setSolveContext(null); // Clear solve context on back
+              }}
+              initialInput={chatPrefill}
+              solveContext={solveContext}
+            />
           ) : activeTab === 'start' ? (
             <PracticePage 
-              onStartChat={(opts) => { setChatPrefill(opts?.prefill); setView('chat'); }}
+              onStartChat={(opts) => {
+                if (opts?.solveData) {
+                  setSolveContext(opts.solveData);
+                } else {
+                  setChatPrefill(opts?.prefill);
+                }
+                setView('chat');
+              }}
               onStartArtifact={(text: string) => { setArtifactText(text); setView('artifact'); }}
             />
           ) : activeTab === 'history' ? (

@@ -6,7 +6,7 @@ import type { ImageRef, SolveInput } from '@features/recognize';
 import { useSolveStore } from '@store/solve';
 
 interface PracticePageProps {
-  onStartChat?: (opts?: { prefill?: string }) => void;
+  onStartChat?: (opts?: { prefill?: string; solveData?: SolveInput }) => void;
   onStartArtifact?: (text: string) => void;
 }
 
@@ -103,9 +103,7 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
           const payload: SolveInput = { image, question, meta: { provider: 'llm', model: 'MINI' } };
           setSolve(payload);
           setOpenRecognizeSheet(false);
-          // Keep artifact flow by passing a summary text for now
-          const summary = `从图片解题：\n- 原图: ${image.src}\n- 题目预览: ${question.text.slice(0, 80)}...`;
-          onStartArtifact?.(summary);
+          onStartChat?.({ solveData: payload });
         }}
       />
     </div>

@@ -76,7 +76,7 @@ export function ImageExtractSheet({ open, onClose, onContinue }: ImageExtractShe
         ref={cameraInputRef}
         type="file"
         accept="image/*"
-        capture="user"
+        capture="environment"
         className="hidden"
         onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
       />
