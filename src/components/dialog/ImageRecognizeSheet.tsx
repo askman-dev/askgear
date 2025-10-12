@@ -9,10 +9,11 @@ interface ImageRecognizeSheetProps {
   onClose: () => void;
   image: ImageRef | null;
   onContinue?: (opts: { image: ImageRef; question: RecognizedQuestion }) => void;
+  onClear?: () => void;
 }
 
-export function ImageRecognizeSheet({ open, onClose, image, onContinue }: ImageRecognizeSheetProps) {
-  const { status, found, result, error, start, cancel } = useRecognizeQuestions();
+export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear }: ImageRecognizeSheetProps) {
+  const { status, found, result, error, partial, start, cancel } = useRecognizeQuestions();
   const lastImageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -46,26 +47,40 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue }: ImageR
             </span>
           )}
           {status === 'done' && (
-            <span className="text-gray-600">共 {questions.length} 道题目</span>
+            <button
+              className="text-gray-600 hover:text-gray-900 underline underline-offset-2"
+              onClick={() => (onClear ? onClear() : onClose())}
+            >
+              清空
+            </button>
           )}
           {status === 'error' && (
-            <span className="text-rose-600">识别失败，请重试</span>
+            <button
+              className="text-rose-600 hover:text-rose-700 underline underline-offset-2"
+              onClick={() => (onClear ? onClear() : onClose())}
+            >
+              清空
+            </button>
           )}
         </div>
       </div>
 
-      {/* Image preview */}
-      {image && (
-        <div className="mb-3">
-          <img src={image.src} alt="原图预览" className="w-full h-48 object-contain rounded-xl bg-gray-50 border border-gray-200" />
-        </div>
-      )}
-
-      {/* Results */}
-      <div className="space-y-3">
+      {/* Unified scrollable area (includes image + results) */}
+      <div className="space-y-3 max-h-[70vh] overflow-y-auto overscroll-contain pr-1">
+        {image && (
+          <div>
+            <img src={image.src} alt="原图预览" className="w-full h-48 object-contain rounded-xl bg-gray-50 border border-gray-200" />
+          </div>
+        )}
+        {status === 'done' && (
+          <div className="text-sm text-gray-600">共 {questions.length} 道题目</div>
+        )}
         {status === 'analyzing' && (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/60 p-6 text-gray-600">
-            <ThinkingIndicator subtle />
+          <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/60 p-3 text-gray-700">
+            <div className="text-xs mb-1 text-gray-500">模型输出进度</div>
+            <div className="text-sm whitespace-pre-wrap leading-snug line-clamp-2">
+              {partial || '…'}
+            </div>
           </div>
         )}
         {status === 'error' && (

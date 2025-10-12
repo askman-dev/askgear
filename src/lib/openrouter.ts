@@ -12,11 +12,10 @@ export const openrouter = createOpenAI({
 
 // Available models via OpenRouter
 export const MODELS = {
-  GPT4O_MINI: 'openai/gpt-4o-mini',
-  CLAUDE_SONNET: 'anthropic/claude-3.5-sonnet',
-  GEMINI_FLASH: 'google/gemini-flash-1.5',
-  LLAMA_3: 'meta-llama/llama-3.2-3b-instruct:free'
+  DEFAULT: (import.meta as any).env?.DEFAULT_MODEL || (import.meta as any).env?.VITE_DEFAULT_MODEL || 'openai/gpt-5-chat',
+  MINI: (import.meta as any).env?.MINI_MODEL || (import.meta as any).env?.VITE_MINI_MODEL || 'openai/gpt-5-mini',
 };
 
-// Default model for MVP
-export const DEFAULT_MODEL = MODELS.GPT4O_MINI;
+// Export convenient constants
+export const DEFAULT_MODEL = MODELS.DEFAULT;
+export const MINI_MODEL = MODELS.MINI;

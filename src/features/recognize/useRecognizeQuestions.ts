@@ -10,6 +10,7 @@ export function useRecognizeQuestions() {
   const [status, setStatus] = useState<RecognizeStatus>('idle');
   const [found, setFound] = useState<number | undefined>(undefined);
   const [result, setResult] = useState<RecognizeQuestionsResult | null>(null);
+  const [partial, setPartial] = useState<string>('');
   const [error, setError] = useState<Error | null>(null);
 
   const cancelRef = useRef<null | (() => void)>(null);
@@ -21,6 +22,7 @@ export function useRecognizeQuestions() {
     setFound(undefined);
     setResult(null);
     setError(null);
+    setPartial('');
 
     const { promise, cancel } = Recognizer.recognize(
       { image },
@@ -32,9 +34,12 @@ export function useRecognizeQuestions() {
           } else if (evt.stage === 'done') {
             setStatus('done');
           }
+        } else if (evt.type === 'partial') {
+          setPartial(evt.text);
         } else if (evt.type === 'complete') {
           setResult(evt.result);
           setStatus('done');
+          setPartial('');
         } else if (evt.type === 'error') {
           setError(evt.error);
           setStatus('error');
@@ -51,8 +56,8 @@ export function useRecognizeQuestions() {
   }, []);
 
   const state = useMemo(
-    () => ({ status, found, result, error }),
-    [status, found, result, error]
+    () => ({ status, found, result, error, partial }),
+    [status, found, result, error, partial]
   );
 
   return { ...state, start, cancel: () => cancelRef.current?.() };

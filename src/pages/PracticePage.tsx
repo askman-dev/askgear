@@ -14,6 +14,7 @@ interface PracticePageProps {
 export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps) {
   const [openTextSheet, setOpenTextSheet] = useState(false);
   const [openImageSheet, setOpenImageSheet] = useState(false);
+  const [imageSheetKey, setImageSheetKey] = useState(0);
   const [openRecognizeSheet, setOpenRecognizeSheet] = useState(false);
   const [pendingImage, setPendingImage] = useState<ImageRef | null>(null);
 
@@ -109,6 +110,7 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
         onContinue={(txt) => onStartArtifact?.(txt)}
       />
       <ImageExtractSheet
+        key={imageSheetKey}
         open={openImageSheet}
         onClose={() => setOpenImageSheet(false)}
         onContinue={(file) => {
@@ -125,6 +127,15 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
         open={openRecognizeSheet}
         onClose={() => setOpenRecognizeSheet(false)}
         image={pendingImage}
+        onClear={() => {
+          if (pendingImage?.src && pendingImage.src.startsWith('blob:')) {
+            URL.revokeObjectURL(pendingImage.src);
+          }
+          setPendingImage(null);
+          setOpenRecognizeSheet(false);
+          setImageSheetKey((k) => k + 1); // force remount to clear internal state
+          setOpenImageSheet(true);
+        }}
         onContinue={({ image, question }) => {
           setOpenRecognizeSheet(false);
           const text = `从图片解题：\n- 原图: ${image.src}\n- 选中的题目: ${question.title}\n- 解析: ${question.analysisPreview ?? ''}`;

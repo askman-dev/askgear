@@ -11,6 +11,7 @@ export function ImageExtractSheet({ open, onClose, onContinue }: ImageExtractShe
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -22,6 +23,12 @@ export function ImageExtractSheet({ open, onClose, onContinue }: ImageExtractShe
 
   const onFile = (f: File | null) => {
     if (!f) return;
+    // basic file validation: images only
+    if (!f.type.startsWith('image/')) {
+      setError('只支持图片文件');
+      return;
+    }
+    setError(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setFile(f);
     setPreviewUrl(URL.createObjectURL(f));
@@ -76,9 +83,9 @@ export function ImageExtractSheet({ open, onClose, onContinue }: ImageExtractShe
           {previewUrl ? (
             <img src={previewUrl} alt="预览" className="w-full h-60 object-contain rounded-xl bg-white" />
           ) : (
-            <div className="h-40 flex items-center justify-center text-gray-600">
+          <div className="h-40 flex items-center justify-center text-gray-600">
               点击选择图片（支持相册/相机）
-            </div>
+          </div>
           )}
           <input
             ref={fileInputRef}
@@ -88,6 +95,9 @@ export function ImageExtractSheet({ open, onClose, onContinue }: ImageExtractShe
             onChange={(e) => onFile(e.target.files?.[0] ?? null)}
           />
         </div>
+        {error && (
+          <div className="text-xs text-red-600 mt-2">{error}</div>
+        )}
       </div>
     </BottomSheet>
   );

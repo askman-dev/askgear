@@ -1,11 +1,9 @@
-import { MockRecognizer } from './providers/mock';
+import { LLMRecognizer } from './providers/llm';
 import type { RecognizeQuestionsProvider } from './types';
 
 function selectProvider(): RecognizeQuestionsProvider {
-  // Future: switch via env var, default to mock
-  // const name = import.meta.env.VITE_RECOGNIZER_PROVIDER || 'mock';
-  // switch (name) { case 'mock': default: return MockRecognizer; }
-  return MockRecognizer;
+  // Production uses LLM provider only. Tests may import mock directly from their own paths.
+  return LLMRecognizer;
 }
 
 export const Recognizer: RecognizeQuestionsProvider = selectProvider();

@@ -30,6 +30,7 @@ export interface RecognizeQuestionsResult {
 
 export type RecognizeEvent =
   | { type: 'progress'; stage: 'idle' | 'analyzing' | 'done'; found?: number }
+  | { type: 'partial'; text: string }
   | { type: 'complete'; result: RecognizeQuestionsResult }
   | { type: 'error'; error: Error };
 
