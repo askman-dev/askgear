@@ -46,7 +46,17 @@
   - 页面：`*Page`（如 `ChatPage`）。
   - 组合/容器：`*View`、`*Panel`、`*Overlay`（语义区分展示/面板/浮层）。
   - 底部面板：`*Sheet`（如 `ImageRecognizeSheet`）。
-  - 复用件：按职能归入 `message/*`、`input/*`、`ui/*` 等子域。
+ - 复用件：按职能归入 `message/*`、`input/*`、`ui/*` 等子域。
 
 以上为强约束；新模块或文件命名与归档需先对齐本指引，再提交实现。
 
+## 开发工具（只记录工具与功能）
+
+- 工具：TypeScript 类型检查（tsc）
+  - 命令：`./node_modules/.bin/tsc -b --pretty false`
+  - 功能：
+    - 使用本地锁定版本的 TypeScript 执行类型检查。
+    - 以 Build Mode + Project References 方式校验工程（遵循 `tsconfig.json` 中的 references）。
+    - 不产出 JS（依赖 `noEmit: true`），仅报告类型错误，适合 CI/本地快速验证。
+    - 读取 `tsBuildInfoFile` 缓存（.tsbuildinfo），加速二次检查。
+    - 严格执行 `verbatimModuleSyntax`、路径别名等 tsconfig 规则，覆盖 Vite 转译未检查的部分。
