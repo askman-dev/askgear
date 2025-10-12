@@ -9,12 +9,10 @@ export interface ImageRef {
   file?: File;
 }
 
+// Simplified question: only id + text (question stem)
 export interface RecognizedQuestion {
   id: string;
-  title: string;
-  previewText?: string;
-  analysisPreview?: string;
-  metadata?: Record<string, unknown>;
+  text: string;
 }
 
 export interface RecognizeQuestionsInput {
@@ -39,4 +37,11 @@ export interface RecognizeQuestionsProvider {
     input: RecognizeQuestionsInput,
     onEvent?: (evt: RecognizeEvent) => void
   ): { promise: Promise<RecognizeQuestionsResult>; cancel: () => void };
+}
+
+// Payload to next page
+export interface SolveInput {
+  image: ImageRef;
+  question: RecognizedQuestion;
+  meta?: { provider: 'llm'; model: string; timings?: Record<string, number> };
 }

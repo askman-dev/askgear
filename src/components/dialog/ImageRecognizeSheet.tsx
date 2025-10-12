@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BottomSheet } from '../ui/BottomSheet';
 import { useRecognizeQuestions } from '@features/recognize/useRecognizeQuestions';
 import type { ImageRef, RecognizedQuestion } from '@features/recognize';
@@ -14,6 +14,14 @@ interface ImageRecognizeSheetProps {
 
 export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear }: ImageRecognizeSheetProps) {
   const { status, found, result, error, partial, start, cancel } = useRecognizeQuestions();
+  const [preparing, setPreparing] = useState(false);
+  const preview50Words = useMemo(() => {
+    if (!partial) return '…';
+    const normalized = partial.replace(/\s+/g, ' ').trim();
+    if (!normalized) return '…';
+    const words = normalized.split(' ');
+    return words.slice(-50).join(' ');
+  }, [partial]);
   const lastImageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -35,6 +43,17 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
   }, []);
 
   const questions = useMemo(() => result?.questions ?? [], [result]);
+  // Preparing heuristic: if analyzing and no partial within 1.5s, show "模型准备中…"
+  useEffect(() => {
+    if (status !== 'analyzing') { setPreparing(false); return; }
+    let timer: any;
+    if (!partial) {
+      timer = setTimeout(() => setPreparing(true), 1500);
+    } else {
+      setPreparing(false);
+    }
+    return () => { if (timer) clearTimeout(timer); };
+  }, [status, partial]);
 
   return (
     <BottomSheet open={open} onClose={onClose}>
@@ -78,9 +97,14 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
         {status === 'analyzing' && (
           <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/60 p-3 text-gray-700">
             <div className="text-xs mb-1 text-gray-500">模型输出进度</div>
-            <div className="text-sm whitespace-pre-wrap leading-snug line-clamp-2">
-              {partial || '…'}
-            </div>
+            {preparing && !partial ? (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <ThinkingIndicator subtle />
+                <span>模型准备中…</span>
+              </div>
+            ) : (
+              <div className="text-sm whitespace-pre-wrap leading-snug">{preview50Words}</div>
+            )}
           </div>
         )}
         {status === 'error' && (
@@ -92,13 +116,8 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
           <div key={q.id} className="rounded-xl border border-gray-200 bg-white p-4">
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-900 truncate">{q.title}</div>
-                {q.previewText && (
-                  <div className="text-gray-700 mt-1 line-clamp-2">{q.previewText}</div>
-                )}
-                {q.analysisPreview && (
-                  <div className="text-gray-500 mt-1 text-sm line-clamp-2">解析：{q.analysisPreview}</div>
-                )}
+                <div className="font-semibold text-gray-900 truncate">{q.text.slice(0, 22)}</div>
+                <div className="text-gray-700 mt-1 text-sm line-clamp-2">{q.text}</div>
               </div>
               <button
                 className="shrink-0 px-4 h-9 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98]"

@@ -60,3 +60,10 @@
     - 不产出 JS（依赖 `noEmit: true`），仅报告类型错误，适合 CI/本地快速验证。
     - 读取 `tsBuildInfoFile` 缓存（.tsbuildinfo），加速二次检查。
     - 严格执行 `verbatimModuleSyntax`、路径别名等 tsconfig 规则，覆盖 Vite 转译未检查的部分。
+
+## LLM Transport（全局）
+
+- 位置：`src/lib/openrouter.ts:1`
+  - 作用：集中封装 OpenRouter 认证与模型名读取（`DEFAULT_MODEL` / `MINI_MODEL`）。
+  - 用法：各功能模块通过 `openrouter.chat(MODEL_NAME)` 构造模型；禁止在功能模块内重复创建客户端或读取环境变量。
+  - 约束：仅承担传输与认证，不包含具体业务逻辑或提示词；具体能力在功能模块实现。

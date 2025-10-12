@@ -8,11 +8,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:recognize": "node tests/recognize-smoke.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.42",
     "@ai-sdk/react": "^2.0.66",
+    "@openrouter/ai-sdk-provider": "^1.2.0",
     "@tailwindcss/postcss": "^4.1.13",
     "ai": "^5.0.59",
     "autoprefixer": "^10.4.21",

@@ -4,7 +4,8 @@ import { IngestCard } from '@components/ui/IngestCard';
 import { TextExtractSheet } from '@components/dialog/TextExtractSheet';
 import { ImageExtractSheet } from '@components/dialog/ImageExtractSheet';
 import { ImageRecognizeSheet } from '@components/dialog/ImageRecognizeSheet';
-import type { ImageRef } from '@features/recognize';
+import type { ImageRef, SolveInput } from '@features/recognize';
+import { useSolveStore } from '@store/solve';
 
 interface PracticePageProps {
   onStartChat?: (opts?: { prefill?: string }) => void;
@@ -17,6 +18,7 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
   const [imageSheetKey, setImageSheetKey] = useState(0);
   const [openRecognizeSheet, setOpenRecognizeSheet] = useState(false);
   const [pendingImage, setPendingImage] = useState<ImageRef | null>(null);
+  const setSolve = useSolveStore((s) => s.set);
 
   useEffect(() => {
     return () => {
@@ -137,9 +139,13 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
           setOpenImageSheet(true);
         }}
         onContinue={({ image, question }) => {
+          // Persist structured payload for next page usage
+          const payload: SolveInput = { image, question, meta: { provider: 'llm', model: 'MINI' } };
+          setSolve(payload);
           setOpenRecognizeSheet(false);
-          const text = `从图片解题：\n- 原图: ${image.src}\n- 选中的题目: ${question.title}\n- 解析: ${question.analysisPreview ?? ''}`;
-          onStartArtifact?.(text);
+          // Keep artifact flow by passing a summary text for now
+          const summary = `从图片解题：\n- 原图: ${image.src}\n- 题目预览: ${question.text.slice(0, 80)}...`;
+          onStartArtifact?.(summary);
         }}
       />
     </div>
