@@ -72,31 +72,6 @@ export function BottomTabs() {
           <button
             onClick={() => {
               setView('main');
-              setActiveTab('history');
-            }}
-            className={clsx(
-              'flex-1 flex items-center justify-center',
-              'min-h-[56px] py-2 px-2',
-              'transition-colors duration-200',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500'
-            )}
-          >
-            <span
-              className={clsx(
-                'inline-flex items-center gap-1 px-3 py-1 rounded-full',
-                activeTab === 'history'
-                  ? 'bg-violet-100 text-violet-700'
-                  : 'text-gray-600'
-              )}
-            >
-              <History className="w-5 h-5" />
-              <span className="text-sm font-medium">历史</span>
-            </span>
-          </button>
-
-          <button
-            onClick={() => {
-              setView('main');
               setActiveTab('challenge');
             }}
             className={clsx(
@@ -116,6 +91,31 @@ export function BottomTabs() {
             >
               <Trophy className="w-5 h-5" />
               <span className="text-sm font-medium">挑战</span>
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setView('main');
+              setActiveTab('history');
+            }}
+            className={clsx(
+              'flex-1 flex items-center justify-center',
+              'min-h-[56px] py-2 px-2',
+              'transition-colors duration-200',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500'
+            )}
+          >
+            <span
+              className={clsx(
+                'inline-flex items-center gap-1 px-3 py-1 rounded-full',
+                activeTab === 'history'
+                  ? 'bg-violet-100 text-violet-700'
+                  : 'text-gray-600'
+              )}
+            >
+              <History className="w-5 h-5" />
+              <span className="text-sm font-medium">成就</span>
             </span>
           </button>
         </nav>
