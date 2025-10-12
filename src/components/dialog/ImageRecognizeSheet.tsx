@@ -3,6 +3,8 @@ import { BottomSheet } from '../ui/BottomSheet';
 import { useRecognizeQuestions } from '@features/recognize/useRecognizeQuestions';
 import type { ImageRef, RecognizedQuestion } from '@features/recognize';
 import { ThinkingIndicator } from '../ui/ThinkingIndicator';
+import clsx from 'clsx';
+import { Loader2 } from 'lucide-react';
 
 interface ImageRecognizeSheetProps {
   open: boolean;
@@ -15,6 +17,8 @@ interface ImageRecognizeSheetProps {
 export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear }: ImageRecognizeSheetProps) {
   const { status, found, result, error, partial, start, cancel } = useRecognizeQuestions();
   const [preparing, setPreparing] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const preview50Words = useMemo(() => {
     if (!partial) return '…';
     const normalized = partial.replace(/\s+/g, ' ').trim();
@@ -43,6 +47,14 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
   }, []);
 
   const questions = useMemo(() => result?.questions ?? [], [result]);
+
+  // Default select the first question
+  useEffect(() => {
+    if (questions.length > 0 && !selectedId) {
+      setSelectedId(questions[0].id);
+    }
+  }, [questions, selectedId]);
+
   // Preparing heuristic: if analyzing and no partial within 1.5s, show "模型准备中…"
   useEffect(() => {
     if (status !== 'analyzing') { setPreparing(false); return; }
@@ -61,9 +73,15 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
         <h2 className="text-2xl font-semibold text-gray-900">识别题目</h2>
         <div className="text-sm text-gray-500">
           {status === 'analyzing' && (
-            <span className="inline-flex items-center gap-2">
-              <ThinkingIndicator subtle text={`Thinking${typeof found === 'number' ? ` · 已发现 ${found}` : ''}`} />
-            </span>
+            <button
+              className="text-gray-600 hover:text-gray-900 underline underline-offset-2"
+              onClick={() => {
+                cancel();
+                onClear?.();
+              }}
+            >
+              停止
+            </button>
           )}
           {status === 'done' && (
             <button
@@ -96,10 +114,12 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
         )}
         {status === 'analyzing' && (
           <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/60 p-3 text-gray-700">
-            <div className="text-xs mb-1 text-gray-500">模型输出进度</div>
+            <div className="text-xs mb-1 text-gray-500 flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>正在思考</span>
+            </div>
             {preparing && !partial ? (
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <ThinkingIndicator subtle />
                 <span>模型准备中…</span>
               </div>
             ) : (
@@ -113,17 +133,30 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
           </div>
         )}
         {status !== 'analyzing' && questions.map((q) => (
-          <div key={q.id} className="rounded-xl border border-gray-200 bg-white p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-900 truncate">{q.text.slice(0, 22)}</div>
-                <div className="text-gray-700 mt-1 text-sm line-clamp-2">{q.text}</div>
-              </div>
+          <div
+            key={q.id}
+            onClick={() => setSelectedId(q.id)}
+            className={clsx(
+              'rounded-xl border bg-white p-4 transition-colors cursor-pointer',
+              selectedId === q.id ? 'border-violet-300 bg-violet-50' : 'border-gray-200'
+            )}
+          >
+            <div className="text-gray-800 text-sm line-clamp-3">{q.text}</div>
+            <div className="flex justify-end items-center gap-2 mt-3">
               <button
                 className="shrink-0 px-4 h-9 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98]"
-                onClick={() => image && onContinue?.({ image, question: q })}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  image && onContinue?.({ image, question: q });
+                }}
               >
-                继续
+                解题
+              </button>
+              <button
+                className="shrink-0 px-4 h-9 rounded-full bg-gray-200 text-gray-500 cursor-not-allowed"
+                disabled
+              >
+                对话
               </button>
             </div>
           </div>
