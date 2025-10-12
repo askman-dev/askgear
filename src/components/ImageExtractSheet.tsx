@@ -36,7 +36,7 @@ export function ImageExtractSheet({ open, onClose, onContinue }: ImageExtractShe
   return (
     <BottomSheet open={open} onClose={onClose}>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-2xl font-semibold text-gray-900">从图片提取</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">拍照或图片</h2>
         <button
           onClick={handleContinue}
           className="px-5 h-10 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -70,4 +70,3 @@ export function ImageExtractSheet({ open, onClose, onContinue }: ImageExtractShe
     </BottomSheet>
   );
 }
-

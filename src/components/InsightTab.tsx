@@ -39,7 +39,7 @@ export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
               onClick={() => setOpenTextSheet(true)}
             />
             <IngestCard
-              title="从图片提取"
+              title="拍照或图片"
               description="上传图片，识别图中信息并提取出数据"
               onClick={() => setOpenImageSheet(true)}
             />
