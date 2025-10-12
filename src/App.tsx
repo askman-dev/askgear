@@ -1,4 +1,4 @@
-import { BottomTabs } from './components/BottomTabs';
+import { BottomTabs } from '@components/layout/BottomTabs';
 
 function App() {
   return <BottomTabs />;

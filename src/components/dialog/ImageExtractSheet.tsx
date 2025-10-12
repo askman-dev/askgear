@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BottomSheet } from './BottomSheet';
+import { BottomSheet } from '../ui/BottomSheet';
 
 interface ImageExtractSheetProps {
   open: boolean;

@@ -1,12 +1,12 @@
 import { ArrowLeft } from 'lucide-react';
-import { ConversationPanel } from './ConversationPanel';
+import { ConversationPanel } from '@components/conversation/ConversationPanel';
 
-interface ChatTabProps {
+interface ChatPageProps {
   onBack?: () => void;
   initialInput?: string;
 }
 
-export function ChatTab({ onBack, initialInput }: ChatTabProps) {
+export function ChatPage({ onBack, initialInput }: ChatPageProps) {
   return (
     <div className="flex flex-col h-full bg-white">
       <header className="sticky top-0 bg-white border-b border-gray-200 p-3 z-10 flex items-center gap-3">

@@ -1,4 +1,4 @@
-export function ChallengeTab() {
+export function ChallengePage() {
   return (
     <div className="flex items-center justify-center h-full bg-gray-50">
       <div className="text-center text-gray-600">
@@ -8,4 +8,3 @@ export function ChallengeTab() {
     </div>
   );
 }
-

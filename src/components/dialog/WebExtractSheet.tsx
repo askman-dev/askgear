@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BottomSheet } from './BottomSheet';
+import { BottomSheet } from '../ui/BottomSheet';
 
 interface WebExtractSheetProps {
   open: boolean;
@@ -57,4 +57,3 @@ export function WebExtractSheet({ open, onClose, onContinue }: WebExtractSheetPr
     </BottomSheet>
   );
 }
-

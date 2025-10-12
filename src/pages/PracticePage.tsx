@@ -1,17 +1,30 @@
 import { Bookmark, Folder, MoreVertical } from 'lucide-react';
-import { IngestCard } from './IngestCard';
-import { useState } from 'react';
-import { TextExtractSheet } from './TextExtractSheet';
-import { ImageExtractSheet } from './ImageExtractSheet';
+import { useEffect, useState } from 'react';
+import { IngestCard } from '@components/ui/IngestCard';
+import { TextExtractSheet } from '@components/dialog/TextExtractSheet';
+import { ImageExtractSheet } from '@components/dialog/ImageExtractSheet';
+import { ImageRecognizeSheet } from '@components/dialog/ImageRecognizeSheet';
+import type { ImageRef } from '@features/recognize';
 
-interface InsightTabProps {
+interface PracticePageProps {
   onStartChat?: (opts?: { prefill?: string }) => void;
   onStartArtifact?: (text: string) => void;
 }
 
-export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
+export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps) {
   const [openTextSheet, setOpenTextSheet] = useState(false);
   const [openImageSheet, setOpenImageSheet] = useState(false);
+  const [openRecognizeSheet, setOpenRecognizeSheet] = useState(false);
+  const [pendingImage, setPendingImage] = useState<ImageRef | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingImage?.file && pendingImage.src.startsWith('blob:')) {
+        URL.revokeObjectURL(pendingImage.src);
+      }
+    };
+  }, [pendingImage]);
+
   return (
     <div className="h-full overflow-y-auto bg-violet-50">
       {/* Top App Bar */}
@@ -98,7 +111,25 @@ export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
       <ImageExtractSheet
         open={openImageSheet}
         onClose={() => setOpenImageSheet(false)}
-        onContinue={() => onStartArtifact?.('从图片提取数据：用户已选择图片')}
+        onContinue={(file) => {
+          const id = `img_${Date.now()}`;
+          const src = URL.createObjectURL(file);
+          const imageRef: ImageRef = { id, src, file, mimeType: file.type };
+          setPendingImage(imageRef);
+          setOpenImageSheet(false);
+          setOpenRecognizeSheet(true);
+        }}
+      />
+
+      <ImageRecognizeSheet
+        open={openRecognizeSheet}
+        onClose={() => setOpenRecognizeSheet(false)}
+        image={pendingImage}
+        onContinue={({ image, question }) => {
+          setOpenRecognizeSheet(false);
+          const text = `从图片解题：\n- 原图: ${image.src}\n- 选中的题目: ${question.title}\n- 解析: ${question.analysisPreview ?? ''}`;
+          onStartArtifact?.(text);
+        }}
       />
     </div>
   );

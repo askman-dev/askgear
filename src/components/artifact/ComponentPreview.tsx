@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { useArtifactStore } from '../store/artifact';
+import { useArtifactStore } from '@store/artifact';
 import * as LucideIcons from 'lucide-react';
 import clsx from 'clsx';
 

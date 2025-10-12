@@ -49,4 +49,3 @@ export function IngestCard({ title, description, meta = 'Today • 23 min', onCl
     </button>
   );
 }
-

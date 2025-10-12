@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-import { ArtifactChatOverlay } from './ArtifactChatOverlay';
-import { ComponentPreview } from './ComponentPreview';
+import { ArtifactChatOverlay } from '@components/conversation/ArtifactChatOverlay';
+import { ComponentPreview } from '@components/artifact/ComponentPreview';
 
 interface ArtifactCreationViewProps {
   initialText?: string;

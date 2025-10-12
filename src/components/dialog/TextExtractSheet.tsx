@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FileText } from 'lucide-react';
-import { BottomSheet } from './BottomSheet';
+import { BottomSheet } from '../ui/BottomSheet';
 
 interface TextExtractSheetProps {
   open: boolean;

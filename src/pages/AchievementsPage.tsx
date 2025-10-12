@@ -19,7 +19,7 @@ const QUERIES: Query[] = [
   { id: 8, title: 'Best travel cameras 2025', category: 'Use Case', estimatedTime: '2s' },
 ];
 
-export function TopQueriesTab() {
+export function AchievementsPage() {
   return (
     <div className="h-full overflow-y-auto">
       <header className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
@@ -36,7 +36,6 @@ export function TopQueriesTab() {
               'bg-white shadow-sm',
               'transition-all duration-200',
               'min-h-[88px] flex flex-col justify-between',
-              // Temporarily disabled interaction
               'opacity-75 cursor-not-allowed'
             )}
           >

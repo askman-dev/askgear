@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import { Star, History, Trophy } from 'lucide-react';
-import { TopQueriesTab } from './TopQueriesTab';
-import { ChatTab } from './ChatTab';
-import { InsightTab } from './InsightTab';
-import { ArtifactCreationView } from './ArtifactCreationView';
-import { ChallengeTab } from './ChallengeTab';
+import { AchievementsPage, ChatPage, PracticePage, ArtifactPage, ChallengePage } from '@pages/index';
 import clsx from 'clsx';
 
 type TabId = 'start' | 'history' | 'challenge';
@@ -23,21 +19,18 @@ export function BottomTabs() {
         {/* Tab Content */}
         <div className="flex-1 overflow-hidden">
           {view === 'artifact' ? (
-            <ArtifactCreationView 
-              initialText={artifactText} 
-              onBack={() => setView('main')} 
-            />
+            <ArtifactPage initialText={artifactText} onBack={() => setView('main')} />
           ) : view === 'chat' ? (
-            <ChatTab onBack={() => setView('main')} initialInput={chatPrefill} />
+            <ChatPage onBack={() => setView('main')} initialInput={chatPrefill} />
           ) : activeTab === 'start' ? (
-            <InsightTab 
+            <PracticePage 
               onStartChat={(opts) => { setChatPrefill(opts?.prefill); setView('chat'); }}
               onStartArtifact={(text: string) => { setArtifactText(text); setView('artifact'); }}
             />
           ) : activeTab === 'history' ? (
-            <TopQueriesTab />
+            <AchievementsPage />
           ) : (
-            <ChallengeTab />
+            <ChallengePage />
           )}
         </div>
 

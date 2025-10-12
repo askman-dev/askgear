@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
@@ -17,6 +18,15 @@ export default defineConfig(({ command }) => {
 
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
+        '@features': fileURLToPath(new URL('./src/features', import.meta.url)),
+        '@pages': fileURLToPath(new URL('./src/pages', import.meta.url)),
+        '@lib': fileURLToPath(new URL('./src/lib', import.meta.url)),
+        '@store': fileURLToPath(new URL('./src/store', import.meta.url)),
+      },
+    },
     optimizeDeps: {
       exclude: ['zod'],
     },
