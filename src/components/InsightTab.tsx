@@ -34,14 +34,14 @@ export function InsightTab({ onStartChat, onStartArtifact }: InsightTabProps) {
           <div className="text-gray-800 font-semibold mb-3">解题</div>
           <div className="space-y-3">
             <IngestCard
-              title="从文本提取"
-              description="粘贴 ChatGPT的输出（或 Markdown格式的文本），提取其中的数据并导出为表格"
-              onClick={() => setOpenTextSheet(true)}
-            />
-            <IngestCard
               title="拍照或图片"
               description="上传图片，识别图中信息并提取出数据"
               onClick={() => setOpenImageSheet(true)}
+            />
+            <IngestCard
+              title="输入文字"
+              description="粘贴 ChatGPT的输出（或 Markdown格式的文本），提取其中的数据并导出为表格"
+              onClick={() => setOpenTextSheet(true)}
             />
           </div>
         </div>
