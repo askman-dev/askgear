@@ -7,6 +7,9 @@ import { ThinkingIndicator } from '@components/ui/ThinkingIndicator';
 import { useConversation } from '@features/conversation';
 import { MessageList } from '@components/message/MessageList';
 import type { Message } from '@features/conversation';
+import { ChevronRight, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import clsx from 'clsx';
 
 interface ConversationPanelProps {
   system?: string;
@@ -20,6 +23,7 @@ export function ConversationPanel({ system, initialInput, initialMessages }: Con
   const conv = useConversation({ system });
   const [input, setInput] = useState(initialInput ?? '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<'analysis' | 'similar' | 'card'>('analysis');
 
   useEffect(() => {
     if (initialMessages && conv.messages.length === 0) {
@@ -75,15 +79,145 @@ export function ConversationPanel({ system, initialInput, initialMessages }: Con
     });
   };
 
+  const questionMessage = conv.messages.find((m: any) => m.displayType === 'problemContext');
+  const conversationMessages = conv.messages.filter((m: any) => m.displayType !== 'problemContext');
+
+  useEffect(() => {
+    if (activeTab === 'analysis') {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeTab, conversationMessages.length]);
+
+  useEffect(() => {
+    setActiveTab('analysis');
+  }, [questionMessage?.id]);
+
   return (
     <div className="flex flex-col h-full bg-gray-50">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <MessageList messages={conv.messages} bottomRef={messagesEndRef} />
-        {conv.isLoading && <ThinkingIndicator />}
+      <div className="px-4 space-y-4">
+        {questionMessage && (
+          <ProblemSummary
+            message={questionMessage}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        )}
       </div>
-      <div className="p-4">
-        <InputBar value={input} onChange={setInput} onSubmit={() => void handleSend()} placeholder="请输入…" disabled={conv.isLoading} />
+
+      {activeTab === 'analysis' ? (
+        <>
+          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
+            <MessageList messages={conversationMessages} bottomRef={messagesEndRef} />
+            {conv.isLoading && <ThinkingIndicator />}
+          </div>
+          <div className="p-4">
+            <InputBar
+              value={input}
+              onChange={setInput}
+              onSubmit={() => void handleSend()}
+              placeholder="请输入…"
+              disabled={conv.isLoading}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 flex items-center justify-center px-4 text-sm text-gray-500">
+          此标签内容即将上线，敬请期待。
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ProblemSummaryProps {
+  message: Message;
+  activeTab: 'analysis' | 'similar' | 'card';
+  onTabChange: (tab: 'analysis' | 'similar' | 'card') => void;
+}
+
+function ProblemSummary({ message, activeTab, onTabChange }: ProblemSummaryProps) {
+  const [showDetail, setShowDetail] = useState(false);
+
+  let text = '';
+  let imageUrl = '';
+  if (Array.isArray(message.content)) {
+    const textPart = message.content.find((p: any) => p.type === 'text');
+    const imagePart = message.content.find((p: any) => p.type === 'image');
+    if (textPart) text = textPart.text.replace(/^Problem: /, '');
+    if (imagePart) imageUrl = imagePart.image as string;
+  } else if (typeof message.content === 'object' && message.content !== null) {
+    text = (message.content as any).text ?? '';
+    imageUrl = (message.content as any).imageUrl ?? '';
+  }
+
+  const detail = showDetail
+    ? createPortal(
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-start bg-black/70 backdrop-blur-sm pt-10"
+          onClick={() => setShowDetail(false)}
+        >
+          <div className="w-full max-w-md px-4 pb-12" onClick={(e) => e.stopPropagation()}>
+            <div className="rounded-3xl bg-[#1f1f1f] text-gray-100 shadow-2xl border border-white/10 max-h-[85vh] flex flex-col overflow-hidden">
+              <div className="sticky top-0 flex items-start gap-3 px-6 pt-6 pb-4 bg-[#1f1f1f]/95 backdrop-blur-sm z-10">
+                <div className="text-sm font-semibold leading-6 text-gray-100 flex-1">题目详情</div>
+                <button
+                  type="button"
+                  onClick={() => setShowDetail(false)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-200 hover:bg-gray-700/60 transition"
+                  aria-label="关闭题目详情"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="px-6 pb-7 space-y-4 overflow-y-auto flex-1">
+                {text && <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-100">{text}</p>}
+                {imageUrl && (
+                  <img src={imageUrl} alt="题目内容" className="w-full rounded-2xl border border-white/10 bg-white/5" />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )
+    : null;
+
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={() => setShowDetail(true)}
+        className="w-full flex items-center justify-between gap-3 text-left text-gray-900 active:opacity-80 transition"
+      >
+        <span className="text-sm font-medium truncate">{text || '题目信息'}</span>
+        <span className="flex items-center justify-center w-6 h-6 text-gray-500">
+          <ChevronRight className="w-4 h-4" />
+        </span>
+      </button>
+
+      <div className="flex items-center gap-4 text-sm text-gray-600">
+        {[{ id: 'analysis', label: '分析' }, { id: 'similar', label: '同类型题' }, { id: 'card', label: '题目卡片' }].map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onTabChange(id as 'analysis' | 'similar' | 'card')}
+            className={clsx(
+              'pb-1 border-b-2 transition-colors',
+              activeTab === id
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent hover:text-blue-500'
+            )}
+          >
+            {label}
+          </button>
+        ))}
       </div>
+
+      {activeTab === 'analysis' ? (
+        <div className="text-xs text-gray-600">风格：小学生思维</div>
+      ) : null}
+
+      {detail}
     </div>
   );
 }

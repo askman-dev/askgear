@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import type { JSX } from 'react';
 import { useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Loader2, Code2, Eye, ChevronDown, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import type { Message } from './types';
 
 interface MessageItemProps {
@@ -12,30 +12,7 @@ interface MessageItemProps {
 export function MessageItem({ message }: MessageItemProps) {
   // Custom renderer for the problem context block
   if (message.role === 'user' && (message as any).displayType === 'problemContext') {
-    let imageUrl = '';
-    if (Array.isArray(message.content)) {
-      // New multimodal content format
-      const imagePart = message.content.find(p => p.type === 'image');
-      if (imagePart) imageUrl = imagePart.image as string;
-    } else if (typeof message.content === 'object' && message.content !== null) {
-      // Backwards compatibility for the old object format, just in case
-      imageUrl = (message.content as any).imageUrl ?? '';
-    }
-
-    return (
-      <div className="p-4 rounded-xl bg-gray-100 border border-gray-200">
-        <div className="flex items-start gap-3">
-          <span className="text-sm font-semibold text-gray-800 whitespace-nowrap leading-6">题目：</span>
-          {imageUrl && (
-            <img src={imageUrl} alt="Problem source" className="w-24 h-24 object-contain rounded-lg border bg-white" />
-          )}
-        </div>
-        <div className="flex items-center gap-2 mt-3">
-          <span className="text-sm font-semibold text-gray-800">风格：</span>
-          <span className="px-3 py-1 rounded-full bg-white text-sm text-gray-700 border border-gray-200">小学生思维</span>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (message.role === 'user') {
