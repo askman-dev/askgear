@@ -84,7 +84,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
       const { textStream } = await streamText({
         model: openrouter.chat(DEFAULT_MODEL),
         stopWhen: stepCountIs(5),
-        messages: llmMessages,
+        messages: llmMessages as any,
         tools: {
           EditReactComponent: tool({
             description: 'Create or update a React component with the given code',
@@ -205,7 +205,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
           </div>
 
           {/* Input Area */}
-          <form onSubmit={handleFormSubmit} className="border-t border-gray-200 p-4">
+          <form onSubmit={handleFormSubmit} className="p-4">
             <InputBar
               value={input}
               onChange={setInput}

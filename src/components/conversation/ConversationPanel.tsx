@@ -34,7 +34,7 @@ export function ConversationPanel({ system, initialInput, initialMessages }: Con
     if (conv.messages.length === 1 && firstMessage?.displayType === 'problemContext') {
       let problemText = '';
       if (Array.isArray(firstMessage.content)) {
-        const textPart = firstMessage.content.find(p => p.type === 'text');
+        const textPart = firstMessage.content.find((p: any) => p.type === 'text');
         if (textPart) {
           problemText = textPart.text.replace(/^Problem: /, '');
         }
@@ -81,7 +81,7 @@ export function ConversationPanel({ system, initialInput, initialMessages }: Con
         <MessageList messages={conv.messages} bottomRef={messagesEndRef} />
         {conv.isLoading && <ThinkingIndicator />}
       </div>
-      <div className="border-t border-gray-200 p-4 bg-white">
+      <div className="p-4">
         <InputBar value={input} onChange={setInput} onSubmit={() => void handleSend()} placeholder="请输入…" disabled={conv.isLoading} />
       </div>
     </div>

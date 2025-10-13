@@ -40,21 +40,15 @@ export const MockRecognizer: RecognizeQuestionsProvider = {
         questions: [
           {
             id: 'q1',
-            title: `${baseTitle} A1：函数与不等式`,
-            previewText: '已知 f(x)=ax^2+bx+c，若 … 求参数范围',
-            analysisPreview: '判别式与单调性结合，作二次函数图像分析 …',
+            text: `${baseTitle} A1：函数与不等式\n已知 f(x)=ax^2+bx+c，若 … 求参数范围`,
           },
           {
             id: 'q2',
-            title: `${baseTitle} A2：数列与极限`,
-            previewText: '数列 {a_n} 满足递推关系 … 求极限',
-            analysisPreview: '构造辅助数列，使用单调有界原理 …',
+            text: `${baseTitle} A2：数列与极限\n数列 {a_n} 满足递推关系 … 求极限`,
           },
           {
             id: 'q3',
-            title: `${baseTitle} B1：解析几何`,
-            previewText: '已知椭圆 … 过定点直线斜率范围',
-            analysisPreview: '焦点性质 + 斜率参数方程联立消元 …',
+            text: `${baseTitle} B1：解析几何\n已知椭圆 … 过定点直线斜率范围`,
           },
         ],
       };

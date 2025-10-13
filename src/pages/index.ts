@@ -1,4 +1,4 @@
-export * from './PracticePage';
+export * from './ResearchPage';
 export * from './ChatPage';
 export * from './ArtifactPage';
 export * from './ChallengePage';

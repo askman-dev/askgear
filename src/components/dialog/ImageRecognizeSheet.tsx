@@ -14,7 +14,7 @@ interface ImageRecognizeSheetProps {
 }
 
 export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear }: ImageRecognizeSheetProps) {
-  const { status, found, result, error, partial, start, cancel } = useRecognizeQuestions();
+  const { status, result, error, partial, start, cancel } = useRecognizeQuestions();
   const [preparing, setPreparing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 

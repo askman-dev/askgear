@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Star, History, Trophy } from 'lucide-react';
-import { AchievementsPage, ChatPage, PracticePage, ArtifactPage, ChallengePage } from '@pages/index';
+import { AchievementsPage, ChatPage, ResearchPage, ArtifactPage, ChallengePage } from '@pages/index';
 import clsx from 'clsx';
 import type { SolveInput } from '@features/recognize';
 
-type TabId = 'start' | 'history' | 'challenge';
+type TabId = 'research' | 'history' | 'challenge';
 type ViewType = 'main' | 'chat' | 'artifact';
 
 export function BottomTabs() {
-  const [activeTab, setActiveTab] = useState<TabId>('start');
+  const [activeTab, setActiveTab] = useState<TabId>('research');
   const [view, setView] = useState<ViewType>('main');
   const [chatPrefill, setChatPrefill] = useState<string | undefined>(undefined);
   const [artifactText, setArtifactText] = useState<string | undefined>(undefined);
@@ -31,8 +31,8 @@ export function BottomTabs() {
               initialInput={chatPrefill}
               solveContext={solveContext}
             />
-          ) : activeTab === 'start' ? (
-            <PracticePage 
+          ) : activeTab === 'research' ? (
+            <ResearchPage 
               onStartChat={(opts) => {
                 if (opts?.solveData) {
                   setSolveContext(opts.solveData);
@@ -56,7 +56,7 @@ export function BottomTabs() {
             <button
               onClick={() => {
                 setView('main');
-                setActiveTab('start');
+                setActiveTab('research');
               }}
               className={clsx(
                 'flex-1 flex items-center justify-center',
@@ -68,13 +68,13 @@ export function BottomTabs() {
               <span
                 className={clsx(
                   'inline-flex flex-col items-center gap-1 px-3 py-1',
-                  activeTab === 'start'
+                  activeTab === 'research'
                     ? 'text-violet-700'
                     : 'text-gray-600'
                 )}
               >
                 <Star className="w-5 h-5" />
-                <span className="text-xs font-medium">练习</span>
+                <span className="text-xs font-medium">研习</span>
               </span>
             </button>
 

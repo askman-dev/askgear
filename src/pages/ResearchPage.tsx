@@ -1,16 +1,16 @@
-import { Bookmark, Library, MoreVertical } from 'lucide-react';
+import { Library, MoreVertical } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ImageExtractSheet } from '@components/dialog/ImageExtractSheet';
 import { ImageRecognizeSheet } from '@components/dialog/ImageRecognizeSheet';
 import type { ImageRef, SolveInput } from '@features/recognize';
 import { useSolveStore } from '@store/solve';
 
-interface PracticePageProps {
+interface ResearchPageProps {
   onStartChat?: (opts?: { prefill?: string; solveData?: SolveInput }) => void;
   onStartArtifact?: (text: string) => void;
 }
 
-export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps) {
+export function ResearchPage({ onStartChat, onStartArtifact: _onStartArtifact }: ResearchPageProps) {
   const [openImageSheet, setOpenImageSheet] = useState(false);
   const [imageSheetKey, setImageSheetKey] = useState(0);
   const [openRecognizeSheet, setOpenRecognizeSheet] = useState(false);
@@ -28,7 +28,7 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
   return (
     <div className="h-full overflow-y-auto bg-gray-50">
       {/* Top App Bar */}
-      <header className="sticky top-0 z-10 bg-gray-50/80 backdrop-blur border-b border-gray-100">
+      <header className="sticky top-0 z-10 bg-gray-50/80 backdrop-blur">
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Library className="w-6 h-6 text-gray-800" />
@@ -54,7 +54,7 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
           <div className="mt-1 text-sm text-gray-600">拍题，或选择图片，AI 会帮你分析思路</div>
         </div>
 
-        {/* Card 2: 海龟汤 */}
+        {/* Card 2: 概念词典 */}
         <div
           className="bg-white rounded-2xl shadow-sm p-6 flex flex-row items-center gap-4 cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={() => { /* Logic for this feature to be added */ }}
@@ -64,8 +64,8 @@ export function PracticePage({ onStartChat, onStartArtifact }: PracticePageProps
             <div className="w-10 h-10 rounded-lg bg-gray-200" />
           </div>
           <div className="flex flex-col">
-            <div className="font-semibold text-lg text-gray-900">海龟汤</div>
-            <div className="mt-1 text-sm text-gray-600">AI 出题，你来猜</div>
+            <div className="font-semibold text-lg text-gray-900">概念词典</div>
+            <div className="mt-1 text-sm text-gray-600">AI 助你掌握核心概念</div>
           </div>
         </div>
       </div>

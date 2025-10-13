@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { ConversationPanel } from '@components/conversation/ConversationPanel';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Message } from '@features/conversation';
 import type { SolveInput } from '@features/recognize';
 import { preprocessImageToMax1024 } from '@features/recognize/preprocess';
@@ -38,10 +38,10 @@ export function ChatPage({ onBack, initialInput, solveContext }: ChatPageProps) 
           id: 'context-msg-' + solveContext.image.id,
           role: 'user',
           displayType: 'problemContext', // for custom UI rendering
-          content: [ // for the AI model
+          content: [
             { type: 'text', text: `Problem: ${solveContext.question.text}` },
             { type: 'image', image: pre.dataUrl },
-          ],
+          ] as any,
         };
         if (isMounted) {
           setInitialMessages([contextMessage]);
@@ -60,8 +60,8 @@ export function ChatPage({ onBack, initialInput, solveContext }: ChatPageProps) 
   }, [isSolving, solveContext]);
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      <header className="sticky top-0 bg-white border-b border-gray-200 p-3 z-10 flex items-center gap-3">
+    <div className="flex flex-col h-full bg-gray-50">
+      <header className="sticky top-0 z-10 px-3 pt-3 pb-2 flex items-center gap-3 bg-gray-50/80 backdrop-blur">
         {onBack && (
           <button
             onClick={onBack}
