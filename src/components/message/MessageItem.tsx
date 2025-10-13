@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import type { JSX } from 'react';
 import { useMemo, useState } from 'react';
-import { Loader2, Code2, Eye, ChevronDown, X } from 'lucide-react';
+import { Loader2, Code2, Eye, ChevronRight, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import type { Message } from './types';
 
@@ -12,13 +12,38 @@ interface MessageItemProps {
 export function MessageItem({ message }: MessageItemProps) {
   // Custom renderer for the problem context block
   if (message.role === 'user' && (message as any).displayType === 'problemContext') {
-    return null;
+    let text = '';
+    let imageUrl = '';
+    if (Array.isArray(message.content)) {
+      // New multimodal content format
+      const textPart = message.content.find(p => p.type === 'text');
+      const imagePart = message.content.find(p => p.type === 'image');
+      if (textPart) text = textPart.text.replace(/^Problem: /, ''); // Clean up prompt prefix
+      if (imagePart) imageUrl = imagePart.image as string;
+    } else if (typeof message.content === 'object' && message.content !== null) {
+      // Backwards compatibility for the old object format, just in case
+      text = (message.content as any).text ?? '';
+      imageUrl = (message.content as any).imageUrl ?? '';
+    }
+
+    return (
+      <div className="p-4 rounded-xl bg-gray-100 border border-gray-200">
+        <p className="text-sm text-gray-800 whitespace-pre-wrap"><span className="font-semibold">题目：</span>{text}</p>
+        {imageUrl && (
+          <img src={imageUrl} alt="Problem source" className="mt-3 w-24 h-24 object-contain rounded-lg border bg-white" />
+        )}
+        <div className="flex items-center gap-2 mt-3">
+          <span className="text-sm font-semibold text-gray-800">风格：</span>
+          <span className="px-3 py-1 rounded-full bg-white text-sm text-gray-700 border border-gray-200">小学生思维</span>
+        </div>
+      </div>
+    );
   }
 
   if (message.role === 'user') {
     return (
       <div className={clsx('flex', 'justify-end')}>
-        <div className={clsx('max-w-[80%] rounded-2xl px-4 py-2.5', 'bg-violet-600 text-white')}>
+        <div className={clsx('max-w-[80%] rounded-2xl px-4 py-2.5 bg-gray-200 text-gray-800')}>
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
@@ -28,12 +53,12 @@ export function MessageItem({ message }: MessageItemProps) {
   // assistant / system / tool (we primarily render assistant parts here)
   return (
     <div className={clsx('flex', 'justify-start')}>
-      <div className="max-w-[80%] space-y-2">
+      <div className="w-full max-w-full space-y-2">
         {(message.parts || []).map((part, index, arr) => {
           if (part.type === 'text') {
             return (
-              <div key={part.id} className={clsx('rounded-2xl px-4 py-2.5', 'bg-gray-100 text-gray-900')}>
-                <p className="text-sm whitespace-pre-wrap">{part.content}</p>
+              <div key={part.id} className="py-1">
+                <p className="text-sm whitespace-pre-wrap text-gray-900">{part.content}</p>
               </div>
             );
           }
@@ -140,23 +165,18 @@ function ReasoningBlock({ content, hasTextAfter }: { content: string; hasTextAft
 
   return (
     <>
-      <div className="rounded-2xl border border-blue-100 bg-blue-50 text-blue-700">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold"
-        >
-          <span
-            className={clsx(
-              'truncate',
-              shouldAnimate ? 'thinking-pulse text-transparent bg-clip-text' : 'text-blue-700'
-            )}
-          >
-            {latestHeading}
-          </span>
-          <ChevronDown className="w-3.5 h-3.5 text-blue-500" />
-        </button>
-      </div>
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="flex items-center gap-2 text-xs font-semibold text-gray-600 active:opacity-80 transition"
+    >
+      <span
+        className={clsx('truncate', shouldAnimate ? 'thinking-pulse text-transparent bg-clip-text' : 'text-gray-600')}
+      >
+        {latestHeading}
+      </span>
+      <ChevronRight className="w-3 h-3 text-gray-400" />
+    </button>
       {overlay}
     </>
   );
@@ -171,9 +191,9 @@ function renderReasoningBlocks(blocks: ReasoningBlock[]) {
     elements.push(
       <div
         key={`paragraph-${elements.length}`}
-        className="flex items-start gap-3 text-sm text-gray-200 leading-relaxed"
+        className="flex items-start gap-3 text-sm text-gray-700 leading-relaxed"
       >
-        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-gray-500" />
+        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-gray-300" />
         <p className="whitespace-pre-wrap flex-1">{currentGroup.join('\n')}</p>
       </div>
     );

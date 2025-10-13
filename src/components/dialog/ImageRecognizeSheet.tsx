@@ -143,7 +143,7 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
             <div className="text-gray-800 text-sm line-clamp-3">{q.text}</div>
             <div className="flex justify-end items-center gap-2 mt-3">
               <button
-                className="shrink-0 px-4 h-9 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98]"
+                className="shrink-0 px-4 h-9 rounded-full bg-gray-900 text-white shadow-sm active:scale-[0.98] hover:bg-gray-800"
                 onClick={(e) => {
                   e.stopPropagation();
                   image && onContinue?.({

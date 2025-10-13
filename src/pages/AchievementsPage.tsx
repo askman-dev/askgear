@@ -21,13 +21,12 @@ const QUERIES: Query[] = [
 
 export function AchievementsPage() {
   return (
-    <div className="h-full overflow-y-auto">
-      <header className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
+    <div className="flex flex-col h-full bg-gray-50">
+      <header className="sticky top-0 z-10 px-4 py-4 bg-gray-50/80 backdrop-blur">
         <h1 className="text-2xl font-bold text-gray-900">历史</h1>
-        <p className="text-sm text-gray-600 mt-1">最近的查询</p>
       </header>
 
-      <div className="p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {QUERIES.map((query) => (
           <div
             key={query.id}
