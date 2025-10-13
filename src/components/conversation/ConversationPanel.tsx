@@ -204,8 +204,8 @@ function ProblemSummary({ message, activeTab, onTabChange }: ProblemSummaryProps
             className={clsx(
               'pb-1 border-b-2 transition-colors',
               activeTab === id
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent hover:text-blue-500'
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent hover:text-gray-700'
             )}
           >
             {label}

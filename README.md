@@ -11,9 +11,9 @@ AskGear is a learning assistant focused on math and puzzle solving. Users can ca
 
 ## Core Features
 
-- 将试卷或截图快速转换为可阅读的题干，省去手动录入的繁琐。  
-- 借助“分析”标签实时追踪 AI 的推理过程，得到逐步讲解与最终答案。  
-- “同类型题 / 题目卡片”标签让学习者可以随时切换到相关练习或题卡整理视图，把知识点连结在一起。
+- Quickly convert test papers or screenshots into readable question text, eliminating the tedious process of manual input.
+- Track the AI's reasoning process in real-time using the "Analysis" tag to get a step-by-step explanation and the final answer.
+- The "Similar Problems / Question Cards" tag allows learners to switch to related exercises or a card organization view at any time, connecting different knowledge points.
 
 ## Further Guidance
 
