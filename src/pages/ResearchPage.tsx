@@ -15,7 +15,7 @@ export function ResearchPage({ onStartChat, onStartArtifact: _onStartArtifact }:
   const [imageSheetKey, setImageSheetKey] = useState(0);
   const [openRecognizeSheet, setOpenRecognizeSheet] = useState(false);
   const [pendingImage, setPendingImage] = useState<ImageRef | null>(null);
-  const setSolve = useSolveStore((s) => s.set);
+  const addSolve = useSolveStore((s) => s.addSolve);
 
   useEffect(() => {
     return () => {
@@ -99,9 +99,17 @@ export function ResearchPage({ onStartChat, onStartArtifact: _onStartArtifact }:
           setOpenImageSheet(true);
         }}
         onContinue={({ image, question }) => {
-          // Persist structured payload for next page usage
-          const payload: SolveInput = { image, question, meta: { provider: 'llm', model: 'MINI' } };
-          setSolve(payload);
+          const payload: SolveInput = {
+            id: image.id,
+            timestamp: Date.now(),
+            image,
+            question,
+            meta: { provider: 'llm', model: 'MINI' },
+          };
+
+          // Persist to IndexedDB and update state store
+          void addSolve(payload);
+
           setOpenRecognizeSheet(false);
           onStartChat?.({ solveData: payload });
         }}

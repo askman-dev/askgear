@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, History, Trophy } from 'lucide-react';
-import { AchievementsPage, ChatPage, ResearchPage, ArtifactPage, ChallengePage } from '@pages/index';
+import { HistoryPage, ChatPage, ResearchPage, ArtifactPage, ChallengePage } from '@pages/index';
 import clsx from 'clsx';
 import type { SolveInput } from '@features/recognize';
+import { useSolveStore } from '@store/solve';
 
 type TabId = 'research' | 'history' | 'challenge';
 type ViewType = 'main' | 'chat' | 'artifact';
@@ -13,6 +14,18 @@ export function BottomTabs() {
   const [chatPrefill, setChatPrefill] = useState<string | undefined>(undefined);
   const [artifactText, setArtifactText] = useState<string | undefined>(undefined);
   const [solveContext, setSolveContext] = useState<SolveInput | null>(null);
+
+  const currentSolveForNav = useSolveStore((s) => s.currentSolveForNav);
+  const clearCurrentSolveForNav = useSolveStore((s) => s.clearCurrentSolveForNav);
+
+  // Effect to handle navigation from history
+  useEffect(() => {
+    if (currentSolveForNav) {
+      setSolveContext(currentSolveForNav);
+      setView('chat');
+      clearCurrentSolveForNav(); // Reset the trigger
+    }
+  }, [currentSolveForNav, clearCurrentSolveForNav]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -44,7 +57,7 @@ export function BottomTabs() {
               onStartArtifact={(text: string) => { setArtifactText(text); setView('artifact'); }}
             />
           ) : activeTab === 'history' ? (
-            <AchievementsPage />
+            <HistoryPage />
           ) : (
             <ChallengePage />
           )}

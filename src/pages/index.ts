@@ -2,5 +2,5 @@ export * from './ResearchPage';
 export * from './ChatPage';
 export * from './ArtifactPage';
 export * from './ChallengePage';
-export * from './AchievementsPage';
+export * from './HistoryPage';
 
