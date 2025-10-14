@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import { Loader2, Code2, Eye, ChevronRight, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import type { Message } from './types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface MessageItemProps {
   message: Message;
@@ -54,11 +56,14 @@ export function MessageItem({ message }: MessageItemProps) {
   return (
     <div className={clsx('flex', 'justify-start')}>
       <div className="w-full max-w-full space-y-2">
+        <div className="text-xs text-gray-600">风格：小学生思维</div>
         {(message.parts || []).map((part, index, arr) => {
           if (part.type === 'text') {
             return (
-              <div key={part.id} className="py-1">
-                <p className="text-sm whitespace-pre-wrap text-gray-900">{part.content}</p>
+              <div key={part.id} className="py-1 prose prose-sm max-w-none prose-p:text-gray-900">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {part.content}
+                </ReactMarkdown>
               </div>
             );
           }

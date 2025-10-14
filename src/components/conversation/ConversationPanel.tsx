@@ -213,9 +213,7 @@ function ProblemSummary({ message, activeTab, onTabChange }: ProblemSummaryProps
         ))}
       </div>
 
-      {activeTab === 'analysis' ? (
-        <div className="text-xs text-gray-600">风格：小学生思维</div>
-      ) : null}
+
 
       {detail}
     </div>
