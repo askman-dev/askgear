@@ -15,12 +15,13 @@ interface ConversationPanelProps {
   system?: string;
   initialInput?: string;
   initialMessages?: Message[];
+  solveId?: string;
 }
 
 // message shape handled in conversation feature
 
-export function ConversationPanel({ system, initialInput, initialMessages }: ConversationPanelProps) {
-  const conv = useConversation({ system });
+export function ConversationPanel({ system, initialInput, initialMessages, solveId }: ConversationPanelProps) {
+  const conv = useConversation({ system, solveId });
   const [input, setInput] = useState(initialInput ?? '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'analysis' | 'similar' | 'card'>('analysis');

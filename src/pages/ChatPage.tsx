@@ -29,6 +29,13 @@ export function ChatPage({ onBack, initialInput, solveContext }: ChatPageProps) 
       return;
     }
 
+    // If messages already exist in the context, use them directly.
+    if (solveContext.messages && solveContext.messages.length > 0) {
+      setInitialMessages(solveContext.messages);
+      return;
+    }
+
+    // Otherwise, create the initial message for a new session.
     let isMounted = true;
     const createInitialMessages = async () => {
       try {
@@ -82,10 +89,11 @@ export function ChatPage({ onBack, initialInput, solveContext }: ChatPageProps) 
           <div className="p-4 text-center text-gray-500">正在准备题目...</div>
         ) : (
           <ConversationPanel
-            key={solveContext?.image.id ?? 'default'} // Add key to force re-mount
+            key={solveContext?.id ?? 'default'} // Add key to force re-mount
             system={systemPrompt}
             initialInput={isSolving ? undefined : initialInput}
             initialMessages={initialMessages}
+            solveId={solveContext?.id}
           />
         )}
       </div>

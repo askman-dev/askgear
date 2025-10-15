@@ -1,3 +1,4 @@
+import type { Message } from '@features/conversation';
 import { create } from 'zustand';
 import type { SolveInput } from '@features/recognize';
 import { db } from '@lib/db';
@@ -19,6 +20,7 @@ interface SolveStore {
   addSolve: (newSolve: SolveInput) => Promise<void>;
   startSolveFromHistory: (id: string) => Promise<void>;
   clearCurrentSolveForNav: () => void;
+  updateMessages: (solveId: string, messages: Message[]) => Promise<void>;
 }
 
 export const useSolveStore = create<SolveStore>((set, get) => ({
@@ -42,18 +44,11 @@ export const useSolveStore = create<SolveStore>((set, get) => ({
   /**
    * Adds a new solve record to the database and updates the metadata list.
    */
-  addSolve: async (newSolve) => {
-    // Ensure timestamp and id are set before saving
-    const solveWithMeta = {
-      ...newSolve,
-      timestamp: newSolve.timestamp || Date.now(),
-      id: newSolve.id || newSolve.image.id,
-    };
-
-    await db.solves.put(solveWithMeta);
+  addSolve: async (newSolve: SolveInput) => {
+    await db.solves.put(newSolve);
 
     // Update the UI state with the new metadata, extracting the question text
-    const { id, question, timestamp } = solveWithMeta;
+    const { id, question, timestamp } = newSolve;
     set((state) => ({
       solveMetas: [{ id, question: (question as any)?.text || question, timestamp }, ...state.solveMetas],
     }));
@@ -74,5 +69,15 @@ export const useSolveStore = create<SolveStore>((set, get) => ({
    */
   clearCurrentSolveForNav: () => {
     set({ currentSolveForNav: null });
+  },
+
+  /**
+   * Finds a solve record by ID and updates its conversation history.
+   */
+  updateMessages: async (solveId: string, messages: Message[]) => {
+    const solveRecord = await db.solves.get(solveId);
+    if (solveRecord) {
+      await db.solves.put({ ...solveRecord, messages });
+    }
   },
 }));

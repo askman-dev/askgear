@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConversationConfig, DoStream, LLMMessage, Message, Part } from './types';
+import { useSolveStore } from '@store/solve';
 
 export function useConversation(config?: ConversationConfig) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -7,6 +8,30 @@ export function useConversation(config?: ConversationConfig) {
 
   const currentAssistantIdRef = useRef<string | null>(null);
   const sendingRef = useRef(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced function to update the database
+  const debouncedUpdate = useCallback((solveId: string, msgs: Message[]) => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      useSolveStore.getState().updateMessages(solveId, msgs);
+    }, 1000); // 1-second debounce
+  }, []);
+
+  // Effect to persist messages when they change
+  useEffect(() => {
+    if (config?.solveId && messages.length > 0) {
+      debouncedUpdate(config.solveId, messages);
+    }
+    // Cleanup timeout on unmount
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [messages, config?.solveId, debouncedUpdate]);
 
   // Compute the minimal suffix to append from an incoming delta to avoid duplicated text
   function computeDeltaSuffix(prevText: string, delta: string): string {

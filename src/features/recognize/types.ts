@@ -40,8 +40,14 @@ export interface RecognizeQuestionsProvider {
 }
 
 // Payload to next page
+import type { Message } from '@features/conversation';
+
+// Payload to next page
 export interface SolveInput {
+  id: string;
+  timestamp: number;
   image: ImageRef;
   question: RecognizedQuestion;
+  messages?: Message[];
   meta?: { provider: 'llm'; model: string; timings?: Record<string, number> };
 }

@@ -21,7 +21,7 @@ function HistoryItem({ solve, onSelect }: { solve: SolveMetadata; onSelect: (id:
         'bg-white shadow-sm',
         'transition-all duration-200',
         'min-h-[88px] flex flex-col justify-between',
-        'cursor-pointer hover:border-violet-300 hover:shadow-md'
+        'cursor-pointer hover:border-gray-800 hover:shadow-md'
       )}
     >
       <div>

@@ -28,4 +28,5 @@ export type DoStream = (
 export interface ConversationConfig {
   system?: string;
   defaultDoStream?: DoStream;
+  solveId?: string;
 }
