@@ -30,7 +30,7 @@ export function ArtifactCreationView({ initialText, onBack }: ArtifactCreationVi
             <ArrowLeft className="w-6 h-6 text-gray-700" />
           </button>
           <div className="flex items-center gap-2 flex-1">
-            <Sparkles className="w-5 h-5 text-violet-600" />
+            <Sparkles className="w-5 h-5 text-gray-600" />
             <h1 className="text-lg font-semibold text-gray-900">创建组件</h1>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function ArtifactCreationView({ initialText, onBack }: ArtifactCreationVi
       {!showChat && (
         <button
           onClick={() => setShowChat(true)}
-          className="fixed bottom-6 right-6 px-6 py-3 rounded-full bg-violet-600 text-white shadow-lg active:scale-[0.98]"
+          className="fixed bottom-6 right-6 px-6 py-3 rounded-full bg-gray-900 text-white shadow-lg active:scale-[0.98]"
         >
           打开对话
         </button>

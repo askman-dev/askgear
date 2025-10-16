@@ -32,7 +32,7 @@ export function WebExtractSheet({ open, onClose, onContinue }: WebExtractSheetPr
         <h2 className="text-2xl font-semibold text-gray-900">从网页提取</h2>
         <button
           onClick={handleContinue}
-          className="px-5 h-10 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-5 h-10 rounded-full bg-gray-900 text-white shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!valid}
         >
           继续
@@ -47,7 +47,7 @@ export function WebExtractSheet({ open, onClose, onContinue }: WebExtractSheetPr
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://example.com/page"
-            className="flex-1 h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-violet-500"
+            className="flex-1 h-12 px-4 rounded-xl border border-gray-300 outline-none focus:ring-2 focus:ring-gray-900"
           />
         </div>
         {!valid && url.trim().length > 0 && (

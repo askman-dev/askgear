@@ -1,13 +1,16 @@
 import Dexie, { type Table } from 'dexie';
 import type { SolveInput } from '@features/recognize';
+import type { ProviderSetting } from '@features/settings/types';
 
 export class SolveHistoryDB extends Dexie {
   solves!: Table<SolveInput>;
+  providerSettings!: Table<ProviderSetting, string>;
 
   constructor() {
     super('SolveHistoryDB');
-    this.version(1).stores({
-      solves: 'id, timestamp', // Primary key 'id', and index 'timestamp' for sorting
+    this.version(2).stores({
+      solves: 'id, timestamp',
+      providerSettings: 'id, isActive, isBuiltIn',
     });
   }
 }

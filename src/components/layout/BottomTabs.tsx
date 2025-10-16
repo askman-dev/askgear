@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Star, History, Trophy } from 'lucide-react';
-import { HistoryPage, ChatPage, ResearchPage, ArtifactPage, ChallengePage } from '@pages/index';
+import { Star, History, Trophy, Settings } from 'lucide-react';
+import { HistoryPage, ChatPage, ResearchPage, ArtifactPage, ChallengePage, SettingsPage } from '@pages/index';
 import clsx from 'clsx';
 import type { SolveInput } from '@features/recognize';
 import { useSolveStore } from '@store/solve';
 
-type TabId = 'research' | 'history' | 'challenge';
+type TabId = 'research' | 'history' | 'challenge' | 'settings';
 type ViewType = 'main' | 'chat' | 'artifact';
 
 export function BottomTabs() {
@@ -58,6 +58,8 @@ export function BottomTabs() {
             />
           ) : activeTab === 'history' ? (
             <HistoryPage />
+          ) : activeTab === 'settings' ? (
+            <SettingsPage />
           ) : (
             <ChallengePage />
           )}
@@ -75,14 +77,14 @@ export function BottomTabs() {
                 'flex-1 flex items-center justify-center',
                 'min-h-[56px] py-2 px-2',
                 'transition-colors duration-200',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500'
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900'
               )}
             >
               <span
                 className={clsx(
                   'inline-flex flex-col items-center gap-1 px-3 py-1',
                   activeTab === 'research'
-                    ? 'text-violet-700'
+                    ? 'text-black [&_svg]:fill-black'
                     : 'text-gray-600'
                 )}
               >
@@ -100,14 +102,14 @@ export function BottomTabs() {
                 'flex-1 flex items-center justify-center',
                 'min-h-[56px] py-2 px-2',
                 'transition-colors duration-200',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500'
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900'
               )}
             >
               <span
                 className={clsx(
                   'inline-flex flex-col items-center gap-1 px-3 py-1',
                   activeTab === 'challenge'
-                    ? 'text-violet-700'
+                    ? 'text-black [&_svg]:fill-black'
                     : 'text-gray-600'
                 )}
               >
@@ -125,19 +127,44 @@ export function BottomTabs() {
                 'flex-1 flex items-center justify-center',
                 'min-h-[56px] py-2 px-2',
                 'transition-colors duration-200',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500'
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900'
               )}
             >
               <span
                 className={clsx(
                   'inline-flex flex-col items-center gap-1 px-3 py-1',
                   activeTab === 'history'
-                    ? 'text-violet-700'
+                    ? 'text-black [&_svg]:fill-black'
                     : 'text-gray-600'
                 )}
               >
                 <History className="w-5 h-5" />
                 <span className="text-xs font-medium">历史</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setView('main');
+                setActiveTab('settings');
+              }}
+              className={clsx(
+                'flex-1 flex items-center justify-center',
+                'min-h-[56px] py-2 px-2',
+                'transition-colors duration-200',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900'
+              )}
+            >
+              <span
+                className={clsx(
+                  'inline-flex flex-col items-center gap-1 px-3 py-1',
+                  activeTab === 'settings'
+                    ? 'text-black [&_svg]:fill-black'
+                    : 'text-gray-600'
+                )}
+              >
+                <Settings className="w-5 h-5" />
+                <span className="text-xs font-medium">设置</span>
               </span>
             </button>
           </nav>

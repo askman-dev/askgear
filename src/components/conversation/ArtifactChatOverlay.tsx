@@ -151,7 +151,7 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
               )}
             />
           </button>
-          <Sparkles className="w-5 h-5 text-violet-600" />
+          <Sparkles className="w-5 h-5 text-gray-600" />
           <h3 className="font-semibold text-gray-900">AI 组件创建助手</h3>
         </div>
         <div className="flex items-center gap-2">
@@ -176,9 +176,8 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
           <div className="flex-1 overflow-y-auto p-4 h-[calc(70vh-140px)]">
             {conv.messages.length === 0 && (
               <div className="text-center py-12">
-                <div className="inline-block p-4 bg-violet-50 rounded-xl mb-3">
-                  <Sparkles className="w-8 h-8 text-violet-600" />
-                </div>
+                <div className="inline-block p-4 bg-gray-100 rounded-xl mb-3">
+                <Sparkles className="w-8 h-8 text-gray-600" />                </div>
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">
                   开始创建 React 组件
                 </h4>
@@ -186,9 +185,8 @@ export function ArtifactChatOverlay({ initialText, onClose, onPreviewUpdate }: A
                   描述你想要的功能，或粘贴数据让 AI 生成合适的展示组件
                 </p>
                 {initialText && (
-                  <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 text-left max-w-md mx-auto">
-                    <p className="text-xs font-semibold text-violet-700 mb-1">初始数据：</p>
-                    <p className="text-xs text-gray-700 line-clamp-3">
+                  <div className="bg-gray-100 border border-gray-200 rounded-xl p-3 text-left max-w-md mx-auto">
+                  <p className="text-xs font-semibold text-gray-700 mb-1">初始数据：</p>                    <p className="text-xs text-gray-700 line-clamp-3">
                       {initialText}
                     </p>
                   </div>

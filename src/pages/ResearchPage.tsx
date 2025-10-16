@@ -34,9 +34,6 @@ export function ResearchPage({ onStartChat, onStartArtifact: _onStartArtifact }:
             <Library className="w-6 h-6 text-gray-800" />
             <h1 className="text-2xl font-bold text-gray-900">数学与谜题</h1>
           </div>
-          <div className="flex items-center gap-4 text-gray-700">
-            <MoreVertical className="w-6 h-6" />
-          </div>
         </div>
       </header>
 

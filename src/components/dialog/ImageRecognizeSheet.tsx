@@ -137,7 +137,7 @@ export function ImageRecognizeSheet({ open, onClose, image, onContinue, onClear 
             onClick={() => setSelectedId(q.id)}
             className={clsx(
               'rounded-xl border bg-white p-4 transition-colors cursor-pointer',
-              selectedId === q.id ? 'border-violet-300 bg-violet-50' : 'border-gray-200'
+              selectedId === q.id ? 'border-gray-400 bg-gray-100' : 'border-gray-200'
             )}
           >
             <div className="text-gray-800 text-sm line-clamp-3">{q.text}</div>

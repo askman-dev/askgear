@@ -72,7 +72,7 @@ export function ChatPage({ onBack, initialInput, solveContext }: ChatPageProps) 
         {onBack && (
           <button
             onClick={onBack}
-            className="p-2 -ml-2 rounded-lg hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            className="p-2 -ml-2 rounded-lg hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
           >
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>

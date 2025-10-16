@@ -53,7 +53,7 @@ export function TextExtractSheet({ open, onClose, onContinue }: TextExtractSheet
           </button>
           <button
             onClick={handleContinue}
-            className="px-5 h-10 rounded-full bg-violet-600 text-white shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 h-10 rounded-full bg-gray-900 text-white shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!text.trim()}
           >
             继续

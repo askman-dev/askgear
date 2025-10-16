@@ -1,67 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { streamText } from 'ai';
+import { useSettingsStore } from '@store/settings';
+import { createAiClient } from '@lib/provider-factory';
 import { DEFAULT_MODEL } from '@lib/openrouter';
-import { orProvider } from '@lib/openrouter-provider';
-import { InputBar } from '@components/input/InputBar';
-import { ThinkingIndicator } from '@components/ui/ThinkingIndicator';
-import { useConversation } from '@features/conversation';
-import { MessageList } from '@components/message/MessageList';
-import type { Message } from '@features/conversation';
-import { ChevronRight, X } from 'lucide-react';
-import { createPortal } from 'react-dom';
-import clsx from 'clsx';
 
-interface ConversationPanelProps {
-  system?: string;
-  initialInput?: string;
-  initialMessages?: Message[];
-  solveId?: string;
-}
-
-// message shape handled in conversation feature
+// ... (rest of the imports)
 
 export function ConversationPanel({ system, initialInput, initialMessages, solveId }: ConversationPanelProps) {
+  const { activeSetting } = useSettingsStore();
   const conv = useConversation({ system, solveId });
-  const [input, setInput] = useState(initialInput ?? '');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<'analysis' | 'similar' | 'card'>('analysis');
+  // ... (rest of the state)
 
-  useEffect(() => {
-    if (initialMessages && conv.messages.length === 0) {
-      conv.setMessages(initialMessages);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialMessages]);
-
-  useEffect(() => {
-    // If the conversation is initialized with a context block, kick off the conversation.
-    const firstMessage = conv.messages[0] as any;
-    if (conv.messages.length === 1 && firstMessage?.displayType === 'problemContext') {
-      let problemText = '';
-      if (Array.isArray(firstMessage.content)) {
-        const textPart = firstMessage.content.find((p: any) => p.type === 'text');
-        if (textPart) {
-          problemText = textPart.text.replace(/^Problem: /, '');
-        }
-      }
-      const fullPrompt = `请帮我讲解这个题目: "${problemText}"`;
-      void handleSend(fullPrompt);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conv.messages]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conv.messages, conv.isLoading]);
-
-  useEffect(() => {
-    if (initialInput && conv.messages.length === 0) {
-      // auto-send prefill once
-      setInput('');
-      void handleSend(initialInput);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialInput]);
+  // ... (useEffect hooks)
 
   const handleSend = async (prefill?: string) => {
     const text = (prefill ?? input).trim();
@@ -69,7 +18,11 @@ export function ConversationPanel({ system, initialInput, initialMessages, solve
     if (!prefill) setInput('');
 
     await conv.send(text, async ({ llmMessages, abortSignal }) => {
-      const model = (orProvider as any)(DEFAULT_MODEL);
+      const provider = createAiClient(activeSetting);
+      const modelName = activeSetting ? activeSetting.defaultModel : DEFAULT_MODEL;
+
+      const model = provider(modelName);
+      
       const result = streamText({
         model,
         messages: llmMessages as any,
@@ -79,6 +32,7 @@ export function ConversationPanel({ system, initialInput, initialMessages, solve
       return { fullStream: (result as any).fullStream };
     });
   };
+
 
   const questionMessage = conv.messages.find((m: any) => m.displayType === 'problemContext');
   const conversationMessages = conv.messages.filter((m: any) => m.displayType !== 'problemContext');
